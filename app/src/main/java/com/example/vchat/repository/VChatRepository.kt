@@ -1,5 +1,6 @@
 package com.example.vchat.repository
 
+import com.example.vchat.util.SingleResult
 import javax.inject.Inject
 
 class VChatRepository @Inject constructor(private  val repository: VChatRepository) {

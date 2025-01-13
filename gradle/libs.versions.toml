@@ -16,7 +16,9 @@ firebaseAuthKtx = "23.1.0"
 hiltAndroid = "2.51.1"
 hiltPlugin = "2.51.1"
 hiltCompiler = "2.51.1"
+#ksp = "1.9.0-1.0.13"
 ksp = "1.9.0-1.0.13"
+kapt="1.8.10"
 androidxLifecycle = "2.6.1"
 kotlinxCoroutines = "1.7.3"
 retrofit = "2.9.0"
@@ -63,8 +65,9 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
 google-devTools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt" , version.ref="kapt"}
 hiltPlugin = { id = "com.google.dagger.hilt.android", version.ref = "hiltPlugin" }
-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+
 
 
 

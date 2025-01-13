@@ -1,16 +1,15 @@
 plugins {
     alias(libs.plugins.android.application)
-//    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.google.devTools.ksp)
-    alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.kotlin.kapt)
+//    id("kotlin-kapt")
     alias(libs.plugins.hiltPlugin)
-
 }
 
 android {
     namespace = "com.example.vchat"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.vchat"
@@ -65,9 +64,13 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.auth.ktx)
     implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
+//    ksp(libs.hilt.compiler)
 //    ksp(libs.hilt.compiler)
 //    implementation(libs.hilt.compiler)
+
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.kotlinx.coroutines.core)

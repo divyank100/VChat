@@ -18,7 +18,7 @@ import com.example.vchat.ui.theme.VChatTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+//        enableEdgeToEdge()
         setContent {
             VChatTheme {
                 val navHostController = rememberNavController()
