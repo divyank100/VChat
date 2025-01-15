@@ -1,3 +1,5 @@
+import org.gradle.internal.impldep.org.junit.experimental.categories.Categories.CategoryFilter.exclude
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -81,6 +83,9 @@ dependencies {
     implementation(libs.okhttp.logging.interceptor) // For logging HTTP requests (optional but useful)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.hilt.navigation.compose)
+    implementation(libs.socket.io.client) {
+        exclude("org.json", "json")
+    }
 
 
 }

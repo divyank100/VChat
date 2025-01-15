@@ -58,6 +58,7 @@ okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhtt
 okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+socket-io-client = { module = "io.socket:socket.io-client", version = "2.0.0" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -67,6 +68,7 @@ google-gms-google-services = { id = "com.google.gms.google-services", version.re
 google-devTools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt" , version.ref="kapt"}
 hiltPlugin = { id = "com.google.dagger.hilt.android", version.ref = "hiltPlugin" }
+
 
 
 
