@@ -1,7 +1,6 @@
 package com.example.vchat.api
 
 import com.example.vchat.models.DummyResponse
-import com.example.vchat.util.ApiResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Header
