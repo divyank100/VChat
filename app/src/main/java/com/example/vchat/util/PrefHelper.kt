@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import javax.inject.Singleton
 
-@Singleton
+//@Singleton
 class PrefHelper(context: Context) {
 
     private val prefsName = "shared_preferences"

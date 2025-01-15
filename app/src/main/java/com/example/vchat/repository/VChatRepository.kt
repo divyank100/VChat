@@ -1,23 +1,18 @@
 package com.example.vchat.repository
 
 import android.content.Context
-import android.icu.util.TimeUnit
-import com.example.vchat.VChat
-import com.example.vchat.VChat.Companion.prefHelper
 import com.example.vchat.api.VChatApi
 import com.example.vchat.models.DummyResponse
 import com.example.vchat.util.AppConstants
 import com.example.vchat.util.DataCache
+import com.example.vchat.util.PrefHelper
 import com.example.vchat.util.Util
-import dagger.hilt.android.internal.managers.ViewComponentManager
 import retrofit2.Response
-import java.util.Calendar
 import javax.inject.Inject
 
-class VChatRepository @Inject constructor(private val vChatApi: VChatApi) {
-    private val prefHelper = VChat.prefHelper
+class VChatRepository @Inject constructor(private val vChatApi: VChatApi,private val prefHelper: PrefHelper) {
 
-    suspend fun baseRefreshToken(
+    suspend fun refreshToken(
         context: Context, isApiCall: Boolean? = false
     ) {
         try {
@@ -40,7 +35,7 @@ class VChatRepository @Inject constructor(private val vChatApi: VChatApi) {
 //                    )
 //                    prefHelper.putString(
 //                        AppConstants.expiryTime,
-//                        TimeUnit.MILLISECOND.(response.body()?.expiresIn.toString().toLong())
+//                        TimeUnit.SECONDS.toMillis(response.body()?.expiresIn.toString().toLong())
 //                            .toString()
 //                    )
 //                }

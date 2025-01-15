@@ -57,6 +57,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.vchat.R
 import com.example.vchat.VChat
+import com.example.vchat.di.PrefHelperEntryPoint
 import com.example.vchat.models.DummyResponse
 import com.example.vchat.nav_graph.VChatNavigationItem
 import com.example.vchat.util.ApiState
@@ -77,7 +78,12 @@ fun LoginScreen(navHostController: NavHostController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    val prefHelper = VChat.prefHelper
+
+    val prefHelper = EntryPointAccessors.fromApplication(
+        context,
+        PrefHelperEntryPoint::class.java
+    ).getPrefHelper()
+
     val savedEmail = prefHelper.getString("email")
 
 

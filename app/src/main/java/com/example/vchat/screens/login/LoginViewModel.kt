@@ -15,10 +15,9 @@ import retrofit2.Response
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(private val repository: VChatRepository): ViewModel() {
+class LoginViewModel @Inject constructor(private val repository: VChatRepository,private val prefHelper: PrefHelper): ViewModel() {
 
     val loginUserResponse = MutableStateFlow<ApiState<DummyResponse>?>(null)
-   private var prefHelper=VChat.prefHelper
 
     fun loginUser(request: String) {
         viewModelScope.launch {
