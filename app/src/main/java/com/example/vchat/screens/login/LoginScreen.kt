@@ -56,10 +56,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.vchat.R
+import com.example.vchat.VChat
 import com.example.vchat.models.DummyResponse
 import com.example.vchat.nav_graph.VChatNavigationItem
-import com.example.vchat.util.ApiResponseStatus
 import com.example.vchat.util.ApiState
+import dagger.hilt.android.EntryPointAccessors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,7 +77,12 @@ fun LoginScreen(navHostController: NavHostController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
+    val prefHelper = VChat.prefHelper
+    val savedEmail = prefHelper.getString("email")
+
+
     LaunchedEffect(isUserLogIn) {
+        println("SAVED EMAIL---- $savedEmail")
         if (isUserLogIn) {
 //            navigateToHomeScreen(navHostController)
         }
@@ -87,7 +93,6 @@ fun LoginScreen(navHostController: NavHostController) {
         is ApiState.Success -> {
             val response = (loginState as ApiState.Success<DummyResponse>).data
             isUserLogIn = true
-
         }
 
         is ApiState.Error -> {

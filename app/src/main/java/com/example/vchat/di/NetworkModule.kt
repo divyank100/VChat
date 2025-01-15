@@ -1,10 +1,13 @@
 package com.example.vchat.di
 
+import android.content.Context
 import com.example.vchat.api.VChatApi
+import com.example.vchat.util.PrefHelper
 import com.example.vchat.util.Util
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -31,4 +34,6 @@ class NetworkModule {
     fun providesApi(retrofit: Retrofit): VChatApi {
         return retrofit.create(VChatApi::class.java)
     }
+
+
 }

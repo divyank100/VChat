@@ -1,17 +1,68 @@
 package com.example.vchat.repository
 
+import android.content.Context
+import android.icu.util.TimeUnit
+import com.example.vchat.VChat
+import com.example.vchat.VChat.Companion.prefHelper
 import com.example.vchat.api.VChatApi
 import com.example.vchat.models.DummyResponse
+import com.example.vchat.util.AppConstants
+import com.example.vchat.util.DataCache
+import com.example.vchat.util.Util
+import dagger.hilt.android.internal.managers.ViewComponentManager
 import retrofit2.Response
+import java.util.Calendar
 import javax.inject.Inject
 
-class VChatRepository @Inject constructor(private  val vChatApi: VChatApi) {
+class VChatRepository @Inject constructor(private val vChatApi: VChatApi) {
+    private val prefHelper = VChat.prefHelper
 
-
-    suspend fun loginUser(email:String): Response<DummyResponse>{
-        return vChatApi.loginUser()
+    suspend fun baseRefreshToken(
+        context: Context, isApiCall: Boolean? = false
+    ) {
+        try {
+            if (Util.isExpired(prefHelper) || isApiCall == true) {
+                DataCache.refreshToken = prefHelper.getString(AppConstants.refreshToken)
+//                val token = TokenRequestJWT(
+//                    DataCache.refreshToken
+//                )
+//                val response = vChatApi.refreshTokenJWT(token)
+//                if (response.isSuccessful) {
+//                    DataCache.token = response.body()?.accessToken
+//                    DataCache.refreshToken = response.body()?.refreshToken
+//                    val currentTime: Long = Calendar.getInstance().time.time
+//                    prefHelper.putString(AppConstants.currentTime, currentTime.toString())
+//                    prefHelper.putString(
+//                        AppConstants.refreshToken, response.body()?.refreshToken.toString()
+//                    )
+//                    prefHelper.putString(
+//                        AppConstants.accessToken, response.body()?.accessToken.toString()
+//                    )
+//                    prefHelper.putString(
+//                        AppConstants.expiryTime,
+//                        TimeUnit.MILLISECOND.(response.body()?.expiresIn.toString().toLong())
+//                            .toString()
+//                    )
+//                }
+//                else{
+//                    prefHelper.clear()
+//                    if (context is ViewComponentManager.FragmentContextWrapper) {
+//                        (context.baseContext as ToolbarChangeListener?)?.triggerRebirth()
+//                    } else {
+//                        (context as ToolbarChangeListener?)?.triggerRebirth()
+//                    }
+//                }
+            } else {
+                DataCache.accessToken = prefHelper.getString(AppConstants.accessToken)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
+    suspend fun loginUser(email: String): Response<DummyResponse> {
+        return vChatApi.loginUser()
+    }
 
 
 }

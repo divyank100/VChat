@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.vchat.screens.SplashScreen
 import com.example.vchat.screens.landing.LandingScreen
 import com.example.vchat.screens.login.LoginScreen
 import com.example.vchat.screens.signup.SignupScreen
@@ -12,6 +13,9 @@ import com.example.vchat.screens.signup.SignupScreen
 fun VChatNavigation(navHostController: NavHostController) {
 
     NavHost(navHostController, startDestination = VChatNavigationItem.LandingScreen.route) {
+        composable(VChatNavigationItem.SplashScreen.route) {
+            SplashScreen(navHostController)
+        }
         composable(VChatNavigationItem.LandingScreen.route) {
             LandingScreen(navHostController)
         }

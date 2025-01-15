@@ -16,7 +16,7 @@ object SocketHandler {
         // This will allow your Android Emulator and physical device at your home to connect to the server
             mSocket = IO.socket("http://10.0.2.2:3000")
         } catch (e: URISyntaxException) {
-
+            e.printStackTrace()
         }
     }
 
