@@ -111,7 +111,7 @@ fun LandingScreen(navHostController: NavHostController) {
                 shape = RoundedCornerShape(30.dp),
                 colors = ButtonDefaults.buttonColors(colorResource(id = R.color.blue)),
                 onClick = {
-                    navHostController.navigate(VChatNavigationItem.LoginScreen.route) {
+                    navHostController.navigate(VChatNavigationItem.AllChats.route) {
                         popUpTo(VChatNavigationItem.LandingScreen.route) {
                             inclusive = true
                         }

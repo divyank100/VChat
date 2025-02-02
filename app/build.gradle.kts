@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.kapt)
 //    id("kotlin-kapt")
     alias(libs.plugins.hiltPlugin)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -86,6 +87,9 @@ dependencies {
     implementation(libs.socket.io.client) {
         exclude("org.json", "json")
     }
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.messaging)
 
 
 }

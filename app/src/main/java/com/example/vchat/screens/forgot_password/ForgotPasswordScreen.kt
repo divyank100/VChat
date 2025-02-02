@@ -1,11 +1,10 @@
-package com.example.vchat.screens.login
+package com.example.vchat.screens.forgot_password
 
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,7 +36,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,96 +49,54 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.vchat.R
-import com.example.vchat.VChat
-import com.example.vchat.di.PrefHelperEntryPoint
+import com.example.vchat.models.forgot_password.ForgotPasswordRequest
 import com.example.vchat.models.login.UserLoginRequest
-import com.example.vchat.models.login.UserloginResponse
-import com.example.vchat.nav_graph.VChatNavigationItem
 import com.example.vchat.util.ApiState
-import com.example.vchat.util.AppConstants
-import com.google.firebase.Firebase
-import com.google.firebase.messaging.ktx.messaging
-import com.google.firebase.messaging.messaging
-import dagger.hilt.android.EntryPointAccessors
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(navHostController: NavHostController) {
+fun ForgotPasswordScreen(navHostController: NavHostController) {
 
-    val viewModel: LoginViewModel = hiltViewModel()
-    val loginState by viewModel.loginUserResponse.collectAsState()
+    val viewmodel: ForgotPasswordViewModel = hiltViewModel()
+    val forgotPasswordState by viewmodel.forgotPasswordResponse.collectAsState()
     val context = LocalContext.current
-    val interactionSource = remember { MutableInteractionSource() }
     var passwordVisible by remember {
         mutableStateOf(false)
     }
-
-
+    var confirmPasswordVisible by remember {
+        mutableStateOf(false)
+    }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    val scope = rememberCoroutineScope()
+    var confirmPassword by remember { mutableStateOf("") }
 
-
-    val prefHelper = EntryPointAccessors.fromApplication(
-        context,
-        PrefHelperEntryPoint::class.java
-    ).getPrefHelper()
-
-
-    LaunchedEffect(loginState) {
-        viewModel.getDeviceToken()
-        when (loginState) {
-
+    LaunchedEffect(forgotPasswordState) {
+        when (forgotPasswordState) {
             is ApiState.Success -> {
-                val response = (loginState as ApiState.Success<UserloginResponse>).data
-                prefHelper.putString(AppConstants.accessToken, response.accessToken)
-                prefHelper.putString(AppConstants.refreshToken, response.refreshToken)
-                Toast.makeText(context, response.message.toString(), Toast.LENGTH_SHORT).show()
-                navigateToAllChats(navHostController)
+                val response = (forgotPasswordState as ApiState.Success<Nothing>)
+                navHostController.popBackStack()
             }
 
             is ApiState.Error -> {
-                val errorMessage = (loginState as ApiState.Error).message
-                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                val error = (forgotPasswordState as ApiState.Error).message
+                Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
             }
 
             else -> {}
-
         }
     }
 
+
     Scaffold { innerPadding ->
-        if (loginState is ApiState.Loading) {
-            Box(
-                modifier = Modifier
-                    .clickable {
-                        scope.launch {
-                            Firebase.messaging.token.await()
-                        }
-                    }
-                    .fillMaxSize()
-                    .background(Color.White)
-                    .wrapContentSize(Alignment.Center)
-            ) {
-                CircularProgressIndicator(
-                    color = colorResource(id = R.color.blue),
-                    strokeWidth = 4.dp
-                )
-            }
-        }
         Box(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
-//                .background(Color.Black)
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -155,21 +111,10 @@ fun LoginScreen(navHostController: NavHostController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(10.dp, 30.dp, 10.dp, 0.dp),
-                    text = "Login to your Account",
+                    text = "Reset your Password",
                     color = colorResource(id = R.color.blue),
                     fontSize = 28.sp,
                     fontFamily = FontFamily(Font(R.font.inter)),
-//                    fontWeight = FontWeight.SemiBold,
-                    textAlign = TextAlign.Center,
-                )
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp, 20.dp, 10.dp, 0.dp),
-                    text = "Welcome Back. Login here",
-                    color = Color.Black,
-                    fontFamily = FontFamily(Font(R.font.inter)),
-                    fontSize = 18.sp,
                     textAlign = TextAlign.Center,
                 )
 
@@ -218,7 +163,7 @@ fun LoginScreen(navHostController: NavHostController) {
                     },
                     label = {
                         Text(
-                            text = "Password ",
+                            text = "New Password ",
                             color = Color.LightGray,
                             fontFamily = FontFamily(Font(R.font.inter)),
                         )
@@ -242,18 +187,47 @@ fun LoginScreen(navHostController: NavHostController) {
                     }
                 )
 
-                Text(
+                OutlinedTextField(
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        Icon(
+                            modifier = Modifier.clickable {
+                                confirmPasswordVisible = !confirmPasswordVisible
+                            },
+                            painter = if (!confirmPasswordVisible) painterResource(id = R.drawable.ic_visibility) else painterResource(
+                                id = R.drawable.ic_visibility_off
+                            ),
+                            contentDescription = "icon"
+                        )
+                    },
+                    label = {
+                        Text(
+                            text = "Confirm Password ",
+                            color = Color.LightGray,
+                            fontFamily = FontFamily(Font(R.font.inter)),
+                        )
+                    },
+                    shape = RoundedCornerShape(10.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable(interactionSource = interactionSource, indication = null) {
-                            navHostController.navigate(VChatNavigationItem.ForgotPasswordScreen.route)
-                        }
-                        .padding(horizontal = 20.dp, vertical = 10.dp),
-                    text = " Forgot password ?",
-                    color = colorResource(id = R.color.blue),
-                    fontFamily = FontFamily(Font(R.font.inter)),
-                    textAlign = TextAlign.Right
+                        .padding(20.dp, 10.dp, 20.dp, 0.dp),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = colorResource(id = R.color.blue),
+                        focusedLabelColor = colorResource(
+                            id = R.color.blue
+                        ),
+                        containerColor = colorResource(
+                            id = R.color.light_blue
+                        )
+                    ),
+                    value = confirmPassword,
+                    onValueChange = {
+                        confirmPassword = it
+                    }
                 )
+
+
 
                 Button(
                     modifier = Modifier
@@ -262,8 +236,9 @@ fun LoginScreen(navHostController: NavHostController) {
                     shape = RoundedCornerShape(30.dp),
                     colors = ButtonDefaults.buttonColors(colorResource(id = R.color.blue)),
                     onClick = {
-                        if (validateDetails(context, email, password)) {
-                            viewModel.loginUser(UserLoginRequest(email, password))
+                        if (validateDetails(context, email, password, confirmPassword)) {
+                            val forgotPasswordRequest = ForgotPasswordRequest(email, password)
+                            viewmodel.forgotPassword(forgotPasswordRequest)
                         }
                     }
                 ) {
@@ -276,7 +251,7 @@ fun LoginScreen(navHostController: NavHostController) {
                         Text(
                             modifier = Modifier.padding(0.dp, 7.dp),
                             fontFamily = FontFamily(Font(R.font.inter)),
-                            text = "Sign in",
+                            text = "Forgot Password",
                             color = Color.White,
                             fontSize = 16.sp,
                             textAlign = TextAlign.Center,
@@ -293,83 +268,31 @@ fun LoginScreen(navHostController: NavHostController) {
 
                 }
 
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(interactionSource = interactionSource, indication = null) {
-                            navHostController.navigate(VChatNavigationItem.SignupScreen.route)
-                        }
-                        .padding(20.dp),
-                    fontFamily = FontFamily(Font(R.font.inter)),
-                    text = "Create new account",
-                    color = Color.LightGray,
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Center
-                )
-
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp, 40.dp, 20.dp, 10.dp),
-                    fontFamily = FontFamily(Font(R.font.inter)),
-                    text = "Or continue with",
-                    color = colorResource(id = R.color.blue),
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Center
-                )
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp, 10.dp, 10.dp, 0.dp),
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    Card(
+                if (forgotPasswordState is ApiState.Loading) {
+                    Box(
                         modifier = Modifier
-                            .width(
-                                100.dp
-                            )
-                            .height(80.dp)
-                            .padding(10.dp, 0.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.LightGray),
-                        shape = RoundedCornerShape(7.dp),
+                            .fillMaxSize()
+                            .background(Color.White.copy(alpha = 0.6f))
+                            .wrapContentSize(Alignment.Center),
                     ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.google),
-                                alignment = Alignment.Center,
-                                modifier = Modifier
-                                    .height(40.dp)
-                                    .width(40.dp),
-                                contentDescription = "google_image"
-                            )
-                        }
-
+                        CircularProgressIndicator(
+                            color = colorResource(id = R.color.blue),
+                            strokeWidth = 4.dp
+                        )
                     }
-
                 }
-
-
             }
         }
-    }
-}
 
-fun navigateToAllChats(navHostController: NavHostController) {
-    navHostController.navigate(VChatNavigationItem.AllChats.route) {
-        popUpTo(VChatNavigationItem.LoginScreen.route) {
-            inclusive = true
-        }
     }
+
 }
 
 private fun validateDetails(
     context: Context,
     email: String,
     password: String,
+    confirmPassword: String
 ): Boolean {
     if (email.isEmpty()) {
         Toast.makeText(context, "Please enter email", Toast.LENGTH_SHORT)
@@ -380,6 +303,22 @@ private fun validateDetails(
         Toast.makeText(
             context,
             "Please enter your password",
+            Toast.LENGTH_SHORT
+        ).show()
+        return false
+    }
+    if (confirmPassword.isEmpty()) {
+        Toast.makeText(
+            context,
+            "Please again enter your password",
+            Toast.LENGTH_SHORT
+        ).show()
+        return false
+    }
+    if (confirmPassword.compareTo(password) != 0) {
+        Toast.makeText(
+            context,
+            "Password and Confirm should be same",
             Toast.LENGTH_SHORT
         ).show()
         return false

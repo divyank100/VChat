@@ -56,7 +56,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.vchat.R
-import com.example.vchat.models.DummyResponse
+import com.example.vchat.models.login.UserLoginRequest
+import com.example.vchat.models.login.UserloginResponse
 import com.example.vchat.screens.login.LoginViewModel
 import com.example.vchat.util.ApiState
 
@@ -74,34 +75,30 @@ fun SignupScreen(navHostController: NavHostController) {
         mutableStateOf(false)
     }
     val signupState by viewModel.signUpUserResponse.collectAsState()
-    var isUserSignup by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
 
-    LaunchedEffect(isUserSignup) {
-        if (isUserSignup) {
-//            navigateToLoginScreen(navHostController)
+    LaunchedEffect(signupState) {
+        when (signupState) {
+
+            is ApiState.Success -> {
+                val response = (signupState as ApiState.Success<UserloginResponse>).data
+                Toast.makeText(context, response?.message ?: "Signup Successful", Toast.LENGTH_SHORT)
+                    .show()
+                navHostController.popBackStack()
+            }
+
+            is ApiState.Error -> {
+                val errorMessage = (signupState as ApiState.Error).message
+                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+            }
+
+            else -> {}
+
         }
     }
 
-    when (signupState) {
-
-        is ApiState.Success -> {
-            val response = (signupState as ApiState.Success<DummyResponse>).data
-            println("RES--- ${response.limit}")
-            isUserSignup = true
-
-        }
-
-        is ApiState.Error -> {
-            val errorMessage = (signupState as ApiState.Error).message
-            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
-        }
-
-        else -> {}
-
-    }
 
     Scaffold { innerPadding ->
         Box(
@@ -259,7 +256,8 @@ fun SignupScreen(navHostController: NavHostController) {
                     onClick = {
                         if (validateDetails(context, email, password, confirmPassword)) {
 //                            Signup api call
-                            viewModel.signUpUser("Hello")
+                            val signUpUserRequest = UserLoginRequest(email, password)
+                            viewModel.signUpUser(signUpUserRequest)
                         }
                     }
                 ) {
@@ -390,6 +388,14 @@ private fun validateDetails(
         Toast.makeText(
             context,
             "Please again enter your password",
+            Toast.LENGTH_SHORT
+        ).show()
+        return false
+    }
+    if (confirmPassword.compareTo(password) != 0) {
+        Toast.makeText(
+            context,
+            "Password and Confirm should be same",
             Toast.LENGTH_SHORT
         ).show()
         return false

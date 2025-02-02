@@ -2,7 +2,9 @@ package com.example.vchat.repository
 
 import android.content.Context
 import com.example.vchat.api.VChatApi
-import com.example.vchat.models.DummyResponse
+import com.example.vchat.models.forgot_password.ForgotPasswordRequest
+import com.example.vchat.models.login.UserLoginRequest
+import com.example.vchat.models.login.UserloginResponse
 import com.example.vchat.util.AppConstants
 import com.example.vchat.util.DataCache
 import com.example.vchat.util.PrefHelper
@@ -55,8 +57,21 @@ class VChatRepository @Inject constructor(private val vChatApi: VChatApi,private
         }
     }
 
-    suspend fun loginUser(email: String): Response<DummyResponse> {
-        return vChatApi.loginUser()
+    suspend fun loginUser(userLoginRequest: UserLoginRequest): Response<UserloginResponse> {
+        return vChatApi.loginUser(userLoginRequest)
+    }
+
+    suspend fun signUpUser(userSignUpRequest: UserLoginRequest): Response<UserloginResponse> {
+        return vChatApi.signUpUser(userSignUpRequest)
+    }
+
+    suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest): Response<Nothing> {
+        return vChatApi.forgotPassword(forgotPasswordRequest)
+    }
+
+    suspend fun updateDeviceToken(userId:String):Response<Nothing> {
+        println("Inside repo$userId")
+        TODO("Not yet implemented")
     }
 
 
