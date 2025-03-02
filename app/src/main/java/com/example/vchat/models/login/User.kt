@@ -23,5 +23,11 @@ data class User(
     @SerializedName("userStatus")
     val userStatus: Boolean,
     @SerializedName("__v")
-    val v: Int
+    val v: Int,
+    @SerializedName("connections")
+    val connections: List<UserConnection>,
+    @SerializedName("requestedConnections")
+    val requestedConnections: List<UserConnection>,
+    @SerializedName("connectionStatus")
+    var connectionStatus: String
 )

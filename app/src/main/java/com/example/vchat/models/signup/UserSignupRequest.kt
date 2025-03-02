@@ -1,12 +1,12 @@
-package com.example.vchat.models.login
+package com.example.vchat.models.signup
 
 
 import com.google.gson.annotations.SerializedName
 
 
-data class UserLoginRequest(
-    @SerializedName("deviceToken")
-    val deviceToken: String,
+data class UserSignupRequest(
+    @SerializedName("userName")
+    val userName: String,
     @SerializedName("email")
     val email: String,
     @SerializedName("password")

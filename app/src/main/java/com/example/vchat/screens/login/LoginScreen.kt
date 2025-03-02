@@ -51,25 +51,19 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.vchat.R
-import com.example.vchat.VChat
 import com.example.vchat.di.PrefHelperEntryPoint
 import com.example.vchat.models.login.UserLoginRequest
 import com.example.vchat.models.login.UserloginResponse
 import com.example.vchat.nav_graph.VChatNavigationItem
 import com.example.vchat.util.ApiState
 import com.example.vchat.util.AppConstants
-import com.google.firebase.Firebase
-import com.google.firebase.messaging.ktx.messaging
-import com.google.firebase.messaging.messaging
+import com.google.gson.Gson
 import dagger.hilt.android.EntryPointAccessors
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,16 +88,24 @@ fun LoginScreen(navHostController: NavHostController) {
         PrefHelperEntryPoint::class.java
     ).getPrefHelper()
 
+    LaunchedEffect(Unit) {
+        viewModel.getDeviceToken()
+    }
+
 
     LaunchedEffect(loginState) {
-        viewModel.getDeviceToken()
         when (loginState) {
-
             is ApiState.Success -> {
                 val response = (loginState as ApiState.Success<UserloginResponse>).data
-                prefHelper.putString(AppConstants.accessToken, response.accessToken)
-                prefHelper.putString(AppConstants.refreshToken, response.refreshToken)
-                Toast.makeText(context, response.message.toString(), Toast.LENGTH_SHORT).show()
+                prefHelper.putString(AppConstants.userData, Gson().toJson(response.data.user))
+                prefHelper.putString(AppConstants.userId, response.data.user.id)
+                prefHelper.putString(AppConstants.accessToken, response.data.accessToken)
+                prefHelper.putString(AppConstants.refreshToken, response.data.refreshToken)
+                prefHelper.putString(
+                    AppConstants.expiryTime,
+                    java.util.concurrent.TimeUnit.SECONDS.toMillis("1000000".toLong()).toString()
+                )
+                Toast.makeText(context, response.message, Toast.LENGTH_SHORT).show()
                 navigateToAllChats(navHostController)
             }
 
@@ -121,11 +123,6 @@ fun LoginScreen(navHostController: NavHostController) {
         if (loginState is ApiState.Loading) {
             Box(
                 modifier = Modifier
-                    .clickable {
-                        scope.launch {
-                            Firebase.messaging.token.await()
-                        }
-                    }
                     .fillMaxSize()
                     .background(Color.White)
                     .wrapContentSize(Alignment.Center)
@@ -263,7 +260,13 @@ fun LoginScreen(navHostController: NavHostController) {
                     colors = ButtonDefaults.buttonColors(colorResource(id = R.color.blue)),
                     onClick = {
                         if (validateDetails(context, email, password)) {
-                            viewModel.loginUser(UserLoginRequest(email, password))
+                            viewModel.loginUser(
+                                UserLoginRequest(
+                                    prefHelper.getString(AppConstants.deviceToken) ?: "",
+                                    email,
+                                    password
+                                )
+                            )
                         }
                     }
                 ) {
@@ -359,7 +362,7 @@ fun LoginScreen(navHostController: NavHostController) {
 }
 
 fun navigateToAllChats(navHostController: NavHostController) {
-    navHostController.navigate(VChatNavigationItem.AllChats.route) {
+    navHostController.navigate(VChatNavigationItem.ConnectedAllChats.route) {
         popUpTo(VChatNavigationItem.LoginScreen.route) {
             inclusive = true
         }

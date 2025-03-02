@@ -16,6 +16,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import org.json.JSONObject
 import retrofit2.Response
 import javax.inject.Inject
 
@@ -33,6 +34,7 @@ class LoginViewModel @Inject constructor(
                 val token = Firebase.messaging.token.await()
                 if (token != null) {
                     prefHelper.putString(AppConstants.deviceToken, token)
+                    println("DEVICE TOKEN $token")
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -48,7 +50,15 @@ class LoginViewModel @Inject constructor(
                 if (response.isSuccessful) {
                     loginUserResponse.value = ApiState.Success(response.body()!!)
                 } else {
-                    loginUserResponse.value = ApiState.Error(response.message())
+                    val errorBody = response.errorBody()?.string()
+                    val errorMsg = errorBody?.let {
+                        try {
+                            JSONObject(it).getString("message")
+                        } catch (e: Exception) {
+                            "Unknown error"
+                        }
+                    } ?: response.message()
+                    loginUserResponse.value = ApiState.Error(errorMsg)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

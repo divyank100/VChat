@@ -18,8 +18,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -58,6 +60,7 @@ import androidx.navigation.NavHostController
 import com.example.vchat.R
 import com.example.vchat.models.login.UserLoginRequest
 import com.example.vchat.models.login.UserloginResponse
+import com.example.vchat.models.signup.UserSignupRequest
 import com.example.vchat.screens.login.LoginViewModel
 import com.example.vchat.util.ApiState
 
@@ -75,6 +78,7 @@ fun SignupScreen(navHostController: NavHostController) {
         mutableStateOf(false)
     }
     val signupState by viewModel.signUpUserResponse.collectAsState()
+    var userName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -84,8 +88,11 @@ fun SignupScreen(navHostController: NavHostController) {
 
             is ApiState.Success -> {
                 val response = (signupState as ApiState.Success<UserloginResponse>).data
-                Toast.makeText(context, response?.message ?: "Signup Successful", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(
+                    context,
+                    response?.message ?: "Signup Successful",
+                    Toast.LENGTH_SHORT
+                ).show()
                 navHostController.popBackStack()
             }
 
@@ -99,6 +106,8 @@ fun SignupScreen(navHostController: NavHostController) {
         }
     }
 
+    val scrollState = rememberScrollState()
+
 
     Scaffold { innerPadding ->
         Box(
@@ -111,7 +120,9 @@ fun SignupScreen(navHostController: NavHostController) {
                 modifier = Modifier
                     .padding(15.dp, 40.dp)
                     .fillMaxWidth()
-                    .wrapContentHeight(),
+                    .wrapContentHeight()
+                    .verticalScroll(scrollState)
+                ,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
 
@@ -137,6 +148,35 @@ fun SignupScreen(navHostController: NavHostController) {
                 )
 
                 OutlinedTextField(
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                    visualTransformation = VisualTransformation.None,
+                    label = {
+                        Text(
+                            text = "Username ",
+                            color = Color.LightGray,
+                            fontFamily = FontFamily(Font(R.font.inter)),
+                        )
+                    },
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp, 50.dp, 20.dp, 0.dp),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = colorResource(id = R.color.blue),
+                        focusedLabelColor = colorResource(
+                            id = R.color.blue
+                        ),
+                        containerColor = colorResource(
+                            id = R.color.light_blue
+                        )
+                    ),
+                    value = userName,
+                    onValueChange = {
+                        userName = it
+                    }
+                )
+
+                OutlinedTextField(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     visualTransformation = VisualTransformation.None,
                     label = {
@@ -149,7 +189,7 @@ fun SignupScreen(navHostController: NavHostController) {
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp, 50.dp, 20.dp, 0.dp),
+                        .padding(20.dp, 10.dp, 20.dp, 0.dp),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         focusedBorderColor = colorResource(id = R.color.blue),
                         focusedLabelColor = colorResource(
@@ -254,9 +294,9 @@ fun SignupScreen(navHostController: NavHostController) {
                     shape = RoundedCornerShape(30.dp),
                     colors = ButtonDefaults.buttonColors(colorResource(id = R.color.blue)),
                     onClick = {
-                        if (validateDetails(context, email, password, confirmPassword)) {
+                        if (validateDetails(context, userName, email, password, confirmPassword)) {
 //                            Signup api call
-                            val signUpUserRequest = UserLoginRequest(email, password)
+                            val signUpUserRequest = UserSignupRequest(userName, email, password)
                             viewModel.signUpUser(signUpUserRequest)
                         }
                     }
@@ -367,10 +407,16 @@ fun SignupScreen(navHostController: NavHostController) {
 
 private fun validateDetails(
     context: Context,
+    userName: String,
     email: String,
     password: String,
     confirmPassword: String
 ): Boolean {
+    if (userName.isEmpty()) {
+        Toast.makeText(context, "Please enter user name", Toast.LENGTH_SHORT)
+            .show()
+        return false
+    }
     if (email.isEmpty()) {
         Toast.makeText(context, "Please enter email", Toast.LENGTH_SHORT)
             .show()

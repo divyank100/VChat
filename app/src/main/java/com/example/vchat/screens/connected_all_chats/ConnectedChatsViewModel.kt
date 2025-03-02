@@ -1,10 +1,9 @@
-package com.example.vchat.screens.signup
+package com.example.vchat.screens.connected_all_chats
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.vchat.models.login.UserLoginRequest
-import com.example.vchat.models.login.UserloginResponse
-import com.example.vchat.models.signup.UserSignupRequest
+import com.example.vchat.models.get_connections.UserConnectionResponse
+import com.example.vchat.models.useridRequest.UserIdRequest
 import com.example.vchat.repository.VChatRepository
 import com.example.vchat.util.ApiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,17 +13,17 @@ import org.json.JSONObject
 import javax.inject.Inject
 
 @HiltViewModel
-class SignupViewModel @Inject constructor(private val repository: VChatRepository) : ViewModel() {
+class ConnectedChatsViewModel @Inject constructor(private  val repository: VChatRepository):ViewModel(){
 
-    val signUpUserResponse = MutableStateFlow<ApiState<UserloginResponse>?>(null)
+    val connectPeopleResponse = MutableStateFlow<ApiState<UserConnectionResponse>?>(null)
 
-    fun signUpUser(request: UserSignupRequest) {
+    fun getConnections(userIdRequest: UserIdRequest) {
         viewModelScope.launch {
             try {
-                signUpUserResponse.value = ApiState.Loading
-                val response = repository.signUpUser(request)
+                connectPeopleResponse.value = ApiState.Loading
+                val response = repository.getUserConnections(userIdRequest)
                 if (response.isSuccessful) {
-                    signUpUserResponse.value = ApiState.Success(response.body()!!)
+                    connectPeopleResponse.value = ApiState.Success(response.body()!!)
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val errorMsg = errorBody?.let {
@@ -34,13 +33,13 @@ class SignupViewModel @Inject constructor(private val repository: VChatRepositor
                             "Unknown error"
                         }
                     } ?: response.message()
-                    signUpUserResponse.value = ApiState.Error(errorMsg)
+                    connectPeopleResponse.value = ApiState.Error(errorMsg)
                 }
-
             } catch (e: Exception) {
                 e.printStackTrace()
-                signUpUserResponse.value = ApiState.Error("Exception: ${e.message}")
+                connectPeopleResponse.value = ApiState.Error("Exception: ${e.message}")
             }
         }
     }
+
 }

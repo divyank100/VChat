@@ -1,8 +1,11 @@
-package com.example.vchat.screens.all_chats
+package com.example.vchat.screens.connected_all_chats
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -12,10 +15,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
@@ -24,6 +29,7 @@ import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,46 +38,77 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.vchat.R
+import com.example.vchat.di.PrefHelperEntryPoint
+import com.example.vchat.models.get_connections.UserConnectionResponse
+import com.example.vchat.models.login.User
+import com.example.vchat.models.useridRequest.UserIdRequest
+import com.example.vchat.nav_graph.VChatNavigationItem
+import com.example.vchat.util.ApiState
+import com.example.vchat.util.AppConstants
+import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AllChats(navHostController: NavHostController) {
 
+    val viewModel: ConnectedChatsViewModel = hiltViewModel()
+    val userConnectionState by viewModel.connectPeopleResponse.collectAsState()
+    val context = LocalContext.current
+    val prefHelper = EntryPointAccessors.fromApplication(
+        context,
+        PrefHelperEntryPoint::class.java
+    ).getPrefHelper()
+
+
     var isActive by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
-    val userList = listOf(
-        "Aarav", "Aditya", "Anika", "Aryan", "Avyaan", "Dhruv", "Ishaan", "Kabir", "Reyansh",
-        "Vihaan", "Aanya", "Aarohi", "Diya", "Inaaya", "Kashvi", "Navya", "Prisha", "Saisha",
-        "Samaira", "Tara", "Vivaan", "Yash", "Zayn", "Aarush", "Advik", "Anaya", "Atharv",
-        "Bhavya", "Charvi", "Daksh", "Eesha", "Gaurav", "Harsh", "Ishika", "Jiya", "Kunal",
-        "Laksh", "Manya", "Nirav", "Om", "Pari", "Rhea", "Shaurya", "Tanish", "Uday", "Vriti",
-        "Yashika", "Zara", "Neil", "Vihaan", "Ishaan", "Atharv", "Aditya", "Aarav", "Kabir",
-        "Reyansh", "Dhruv", "Avyaan", "Aryan", "Vivaan", "Yash", "Zayn", "Aarush", "Advik",
-        "Anaya", "Bhavya", "Charvi", "Daksh", "Eesha", "Gaurav", "Harsh", "Ishika", "Jiya",
-        "Kunal", "Laksh", "Manya", "Nirav", "Om", "Pari", "Rhea", "Shaurya", "Tanish", "Uday",
-        "Vriti", "Yashika", "Zara", "Neil"
-    )
-    var searchResults by remember { mutableStateOf(listOf<String>()) }
+    var userList by remember { mutableStateOf(listOf<User>()) }
+    var searchResults by remember { mutableStateOf(listOf<User>()) }
+
+    LaunchedEffect(Unit) {
+        viewModel.getConnections(
+            userIdRequest = UserIdRequest(
+                prefHelper.getString(AppConstants.userId) ?: ""
+            )
+        )
+    }
+
+    LaunchedEffect(userConnectionState) {
+        when (userConnectionState) {
+            is ApiState.Success -> {
+                val data =
+                    (userConnectionState as ApiState.Success<UserConnectionResponse>).data.data
+                userList = data
+                searchResults = userList
+            }
+
+            is ApiState.Error -> {
+                val errorMessage = (userConnectionState as ApiState.Error).message
+                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+            }
+
+            else -> {}
+        }
+    }
 
     LaunchedEffect(searchQuery) {
         delay(400)
         searchResults = if (searchQuery.isEmpty()) userList else userList.filter {
-            it.contains(
-                searchQuery,
-                ignoreCase = true
-            )
+            it.userName.contains(searchQuery, ignoreCase = true)
         }
+        println("SEARCH RESULT LIST----- $searchResults")
     }
 
     Scaffold { innerPadding ->
@@ -80,32 +117,34 @@ fun AllChats(navHostController: NavHostController) {
                 .padding(innerPadding)
                 .fillMaxSize()
                 .background(color = Color.White),
-            horizontalAlignment = Alignment.CenterHorizontally
+//            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(
                 modifier = Modifier
                     .padding(16.dp)
-                    .fillMaxWidth()
-                ,
+                    .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    "Add People",
+                    "Connect People",
                     fontFamily = FontFamily(Font(R.font.inter)),
                     fontSize = 18.sp,
                     color = Color.Black,
                     fontWeight = FontWeight.SemiBold
                 )
                 Image(
+                    modifier = Modifier.clickable {
+                        navHostController.navigate(VChatNavigationItem.ConnectPeople.route)
+                    },
                     painter = painterResource(R.drawable.ic_plus),
-                    contentDescription = "plus_img"
+                    contentDescription = "connect_people_icon"
                 )
             }
             SearchBar(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
-                    .padding(16.dp,0.dp,16.dp,16.dp),
+                    .padding(16.dp, 0.dp, 16.dp, 16.dp),
                 shape = RoundedCornerShape(5.dp),
                 query = searchQuery,
 //                shadowElevation = 2.dp,
@@ -117,7 +156,7 @@ fun AllChats(navHostController: NavHostController) {
                 },
                 placeholder = {
                     Text(
-                        text = "Search",
+                        text = "Search by name",
                         fontFamily = FontFamily(Font(R.font.inter)),
                         color = Color.LightGray
                     )
@@ -149,31 +188,57 @@ fun AllChats(navHostController: NavHostController) {
                 if (searchQuery.isEmpty()) {
                     Text("No users found")
                 } else {
-                    ConnectedUsers(searchResults)
+                    ConnectedUsers(searchResults, navHostController)
                 }
             }
-            ConnectedUsers(searchResults)
+            if (userConnectionState is ApiState.Loading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.White)
+                        .wrapContentSize(Alignment.Center)
+                ) {
+                    CircularProgressIndicator(
+                        color = colorResource(id = R.color.blue),
+                        strokeWidth = 4.dp
+                    )
+                }
+            }
+            Text(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp),
+                text = "Chats",
+                fontFamily = FontFamily(Font(R.font.inter)),
+                fontSize = 22.sp,
+                color = colorResource(R.color.blue),
+                fontWeight = FontWeight.SemiBold,
+            )
+            ConnectedUsers(searchResults, navHostController)
 
         }
     }
 }
 
 @Composable
-private fun ConnectedUsers(users: List<String>) {
-    LazyColumn {
+private fun ConnectedUsers(users: List<User>, navHostController: NavHostController) {
+    LazyColumn(
+        modifier = Modifier.padding(0.dp,15.dp,0.dp,5.dp)
+    ) {
         items(users) { user ->
-            UserTile(user)
+            UserCard(user, navHostController)
         }
     }
 }
 
 @Composable
-fun UserTile(user: String) {
+fun UserCard(user: User, navHostController: NavHostController) {
     Column(
         modifier = Modifier
             .wrapContentHeight()
             .fillMaxWidth()
-            .background(Color.White),
+            .background(Color.White)
+            .clickable {
+                navHostController.navigate(VChatNavigationItem.ChatScreen.route + "/${user.id}" + "/${user.userName}")
+            },
     ) {
 
         Row(
@@ -200,15 +265,16 @@ fun UserTile(user: String) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .fillMaxHeight(0.4f),
-                    text = user,
+                    text = user.userName,
                     fontFamily = FontFamily(Font(R.font.inter)),
                     color = Color.Black,
                     fontSize = 16.sp
                 )
                 Text(
-                    text = "Last seen yesterday",
+                    text = if (user.userStatus) "Online" else "Offline",
                     fontFamily = FontFamily(Font(R.font.inter)),
-                    color = Color.LightGray
+                    color = Color.LightGray,
+                    fontSize = 14.sp
                 )
             }
         }

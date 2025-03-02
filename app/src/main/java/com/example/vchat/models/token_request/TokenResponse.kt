@@ -1,26 +1,19 @@
-package com.example.vchat.models.login
-
+package com.example.vchat.models.token_request
 
 import com.google.gson.annotations.SerializedName
 
-
-data class UserloginResponse(
+data class TokenResponse(
     @SerializedName("data")
-    val data: UserrData,
+    val data: Token,
     @SerializedName("message")
     val message: String,
     @SerializedName("status")
     val status: String
-
-){
-    data class UserrData(
-        @SerializedName("accessToken")
-        val accessToken: String,
+) {
+    data class Token(
         @SerializedName("refreshToken")
         val refreshToken: String,
-        @SerializedName("user")
-        val user: User,
+        @SerializedName("accessToken")
+        val accessToken: String,
     )
 }
-
-

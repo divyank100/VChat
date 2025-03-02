@@ -2,8 +2,6 @@ package com.example.vchat.nav_graph
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MailOutline
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -11,10 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -26,12 +21,12 @@ import com.example.vchat.R
 fun BottomNavBar(navController: NavHostController) {
     val items = listOf(
         BottomNavItem(
-            "Add People",
+            "Connect People",
             ImageVector.vectorResource(R.drawable.ic_people),
-            VChatNavigationItem.AddPeople.route
+            VChatNavigationItem.ConnectPeople.route
         ),
-        BottomNavItem("Chats", Icons.Default.MailOutline, VChatNavigationItem.AllChats.route),
-        BottomNavItem("More", ImageVector.vectorResource(R.drawable.ic_more_horizontal), VChatNavigationItem.More.route)
+        BottomNavItem("Chats", Icons.Default.MailOutline, VChatNavigationItem.ConnectedAllChats.route),
+        BottomNavItem("More", ImageVector.vectorResource(R.drawable.ic_more_horizontal), VChatNavigationItem.ProfileScreen.route)
     )
 
     NavigationBar(
@@ -48,7 +43,7 @@ fun BottomNavBar(navController: NavHostController) {
                     navController.navigate(item.route)
                 },
                 icon = {
-                    if (item.route != VChatNavigationItem.AllChats.route) {
+                    if (item.route != VChatNavigationItem.ConnectedAllChats.route) {
                         Icon(
                             imageVector = item.icon,
                             contentDescription = item.title
@@ -56,7 +51,7 @@ fun BottomNavBar(navController: NavHostController) {
                     }
                 },
                 label = {
-                    if (item.route == VChatNavigationItem.AllChats.route) {
+                    if (item.route == VChatNavigationItem.ConnectedAllChats.route) {
                         Text(
                             color = Color.Black,
                             text = item.title,

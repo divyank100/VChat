@@ -6,10 +6,12 @@ sealed class VChatNavigationItem(val route: String) {
     object LoginScreen : VChatNavigationItem("login")
     object SignupScreen : VChatNavigationItem("signup")
     object ForgotPasswordScreen : VChatNavigationItem("forgotPassword")
+    object ChatScreen : VChatNavigationItem("chats")
+    object RequestScreen : VChatNavigationItem("requests")
 
     // 🟢 Bottom Navigation Items
-    object AllChats : VChatNavigationItem("allChats")
-    object AddPeople : VChatNavigationItem("addPeople")
-    object More : VChatNavigationItem("more")
+    object ConnectedAllChats : VChatNavigationItem("allChats")
+    object ConnectPeople : VChatNavigationItem("connectPeople")
+    object ProfileScreen : VChatNavigationItem("profileScreen")
 
 }

@@ -4,19 +4,34 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.navArgument
+import com.example.vchat.di.PrefHelperEntryPoint
 import com.example.vchat.screens.SplashScreen
-import com.example.vchat.screens.all_chats.AllChats
+import com.example.vchat.screens.connected_all_chats.AllChats
+import com.example.vchat.screens.chat.ChatScreen
+import com.example.vchat.screens.connect_people.ConnectPeople
 import com.example.vchat.screens.forgot_password.ForgotPasswordScreen
 import com.example.vchat.screens.landing.LandingScreen
 import com.example.vchat.screens.login.LoginScreen
+import com.example.vchat.screens.profile.ProfileScreen
+import com.example.vchat.screens.requests.RequestScreen
 import com.example.vchat.screens.signup.SignupScreen
+import com.example.vchat.util.AppConstants
+import dagger.hilt.android.EntryPointAccessors
 
 @Composable
 fun VChatNavigation(navHostController: NavHostController) {
+    val context = LocalContext.current
+    val prefHelper = EntryPointAccessors.fromApplication(
+        context,
+        PrefHelperEntryPoint::class.java
+    ).getPrefHelper()
     Scaffold(
         bottomBar = {
             if (shouldShowBottomNav(navHostController)) {
@@ -28,7 +43,9 @@ fun VChatNavigation(navHostController: NavHostController) {
         NavHost(
             modifier = Modifier.padding(innerPadding),
             navController = navHostController,
-            startDestination = VChatNavigationItem.LandingScreen.route
+            startDestination = if (prefHelper.getString(AppConstants.refreshToken)
+                    ?.isNotEmpty() == true
+            ) VChatNavigationItem.ConnectedAllChats.route else VChatNavigationItem.LandingScreen.route
         ) {
             composable(VChatNavigationItem.SplashScreen.route) {
                 SplashScreen(navHostController)
@@ -45,14 +62,37 @@ fun VChatNavigation(navHostController: NavHostController) {
             composable(VChatNavigationItem.ForgotPasswordScreen.route) {
                 ForgotPasswordScreen(navHostController)
             }
-            composable(VChatNavigationItem.AllChats.route) {
+            composable(VChatNavigationItem.ConnectedAllChats.route) {
                 AllChats(navHostController)
             }
-            composable(VChatNavigationItem.More.route) {
-                AllChats(navHostController)
+            composable(VChatNavigationItem.ProfileScreen.route) {
+                ProfileScreen(navHostController)
             }
-            composable(VChatNavigationItem.AddPeople.route) {
-                AllChats(navHostController)
+            composable(VChatNavigationItem.ConnectPeople.route) {
+                ConnectPeople(navHostController)
+            }
+            composable(VChatNavigationItem.ChatScreen.route + "/{userId}"+"/{userName}",
+                arguments = listOf(
+                    navArgument(
+                        name = "userId",
+                        builder = {
+                            type = NavType.StringType
+                        }
+                    ),
+                    navArgument(
+                        name = "userName",
+                        builder = {
+                            type = NavType.StringType
+                        }
+                    ),
+                )
+            ) {
+                val userId=it.arguments?.getString("userId")
+                val userName=it.arguments?.getString("userName")
+                ChatScreen(navHostController,userId,userName)
+            }
+            composable(VChatNavigationItem.RequestScreen.route) {
+                RequestScreen(navHostController)
             }
         }
     }
@@ -63,8 +103,8 @@ fun VChatNavigation(navHostController: NavHostController) {
 fun shouldShowBottomNav(navController: NavHostController): Boolean {
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
     return currentRoute in listOf(
-        VChatNavigationItem.AllChats.route,
-        VChatNavigationItem.AddPeople.route,
-        VChatNavigationItem.More.route
+        VChatNavigationItem.ConnectedAllChats.route,
+        VChatNavigationItem.ConnectPeople.route,
+        VChatNavigationItem.ProfileScreen.route
     )
 }

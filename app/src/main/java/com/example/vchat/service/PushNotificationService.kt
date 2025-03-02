@@ -7,6 +7,7 @@ import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.vchat.R
+import com.example.vchat.VChat
 import com.example.vchat.repository.VChatRepository
 import com.example.vchat.util.PrefHelper
 import com.google.firebase.messaging.FirebaseMessagingService
@@ -15,14 +16,24 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class PushNotificationService @Inject constructor(private val repository: VChatRepository) :FirebaseMessagingService() {
+class PushNotificationService :FirebaseMessagingService() {
+
+//    @Inject
+//    lateinit var repository: VChatRepository
+
+    override fun onCreate() {
+        super.onCreate()
+//        repository = VChatRepository()
+//        (application as VChat).appComponent.inject(this)
+    }
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         println("NEW TOKEN RECEIVED $token")
-        GlobalScope.launch {
-            repository.updateDeviceToken("userId")
-        }
+
+//        GlobalScope.launch {
+//            repository.updateDeviceToken("userId")
+//        }
 //        update to the server
     }
 

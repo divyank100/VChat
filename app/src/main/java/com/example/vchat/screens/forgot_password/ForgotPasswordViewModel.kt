@@ -8,6 +8,7 @@ import com.example.vchat.util.ApiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,7 +25,15 @@ class ForgotPasswordViewModel @Inject constructor(private val repository: VChatR
                     forgotPasswordResponse.value=ApiState.Success(response.body()!!)
                 }
                 else{
-                    forgotPasswordResponse.value=ApiState.Error(response.message())
+                    val errorBody = response.errorBody()?.string()
+                    val errorMsg = errorBody?.let {
+                        try {
+                            JSONObject(it).getString("message")
+                        } catch (e: Exception) {
+                            "Unknown error"
+                        }
+                    } ?: response.message()
+                    forgotPasswordResponse.value = ApiState.Error(errorMsg)
                 }
             }
             catch (e:Exception){
