@@ -56,6 +56,7 @@ import com.example.vchat.models.useridRequest.UserIdRequest
 import com.example.vchat.nav_graph.VChatNavigationItem
 import com.example.vchat.util.ApiState
 import com.example.vchat.util.AppConstants
+import com.example.vchat.util.SocketHandler
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.delay
 
@@ -78,6 +79,8 @@ fun AllChats(navHostController: NavHostController) {
     var searchResults by remember { mutableStateOf(listOf<User>()) }
 
     LaunchedEffect(Unit) {
+        SocketHandler.setSocket()
+        SocketHandler.establishConnection()
         viewModel.getConnections(
             userIdRequest = UserIdRequest(
                 prefHelper.getString(AppConstants.userId) ?: ""

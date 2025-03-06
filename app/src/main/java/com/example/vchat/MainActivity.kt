@@ -45,9 +45,9 @@ class MainActivity : ComponentActivity() {
 //            }
 //        }
 
-        SocketHandler.setSocket()
-        SocketHandler.establishConnection()
-        val mSocket = SocketHandler.getSocket()
+//        SocketHandler.setSocket()
+//        SocketHandler.establishConnection()
+//        val mSocket = SocketHandler.getSocket()
 //        mSocket.on("eventName") { args ->
 //            if (args[0] != null) {
 //                val counter = args[0] as Int
@@ -63,6 +63,12 @@ class MainActivity : ComponentActivity() {
                 VChatNavigation(navHostController)
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        SocketHandler.closeConnection()
+        println("Socket disconnected")
     }
 }
 

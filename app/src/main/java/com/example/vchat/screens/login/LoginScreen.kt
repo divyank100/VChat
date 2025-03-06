@@ -120,19 +120,6 @@ fun LoginScreen(navHostController: NavHostController) {
     }
 
     Scaffold { innerPadding ->
-        if (loginState is ApiState.Loading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.White)
-                    .wrapContentSize(Alignment.Center)
-            ) {
-                CircularProgressIndicator(
-                    color = colorResource(id = R.color.blue),
-                    strokeWidth = 4.dp
-                )
-            }
-        }
         Box(
             modifier = Modifier
                 .padding(innerPadding)
@@ -356,6 +343,19 @@ fun LoginScreen(navHostController: NavHostController) {
                 }
 
 
+            }
+        }
+        if (loginState is ApiState.Loading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White)
+                    .wrapContentSize(Alignment.Center)
+            ) {
+                CircularProgressIndicator(
+                    color = colorResource(id = R.color.blue),
+                    strokeWidth = 4.dp
+                )
             }
         }
     }

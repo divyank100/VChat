@@ -47,6 +47,7 @@ import com.example.vchat.di.PrefHelperEntryPoint
 import com.example.vchat.models.login.User
 import com.example.vchat.nav_graph.VChatNavigationItem
 import com.example.vchat.util.AppConstants
+import com.example.vchat.util.SocketHandler
 import com.google.gson.Gson
 import dagger.hilt.android.EntryPointAccessors
 
@@ -141,7 +142,8 @@ fun ProfileScreen(navHostController: NavHostController) {
                         .fillMaxWidth()
                         .wrapContentHeight()
                         .clip(RoundedCornerShape(10.dp))
-                        .background(color = colorResource(R.color.off_white)),
+                        .background(color = colorResource(R.color.off_white))
+                        .padding(7.dp),
 //                        .shadow(5.dp, RoundedCornerShape(7.dp)),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -178,7 +180,8 @@ fun ProfileScreen(navHostController: NavHostController) {
                         .fillMaxWidth()
                         .wrapContentHeight()
                         .clip(RoundedCornerShape(10.dp))
-                        .background(color = colorResource(R.color.off_white)),
+                        .background(color = colorResource(R.color.off_white))
+                        .padding(7.dp),
 //                        .shadow(5.dp, RoundedCornerShape(7.dp)),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -199,7 +202,8 @@ fun ProfileScreen(navHostController: NavHostController) {
                         .fillMaxWidth()
                         .wrapContentHeight()
                         .clip(RoundedCornerShape(10.dp))
-                        .background(color = colorResource(R.color.off_white)),
+                        .background(color = colorResource(R.color.off_white))
+                        .padding(7.dp),
 //                        .shadow(5.dp, RoundedCornerShape(7.dp)),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -220,7 +224,8 @@ fun ProfileScreen(navHostController: NavHostController) {
                         .fillMaxWidth()
                         .wrapContentHeight()
                         .clip(RoundedCornerShape(10.dp))
-                        .background(color = colorResource(R.color.off_white)),
+                        .background(color = colorResource(R.color.off_white))
+                        .padding(7.dp),
 //                        .shadow(5.dp, RoundedCornerShape(7.dp)),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -243,6 +248,7 @@ fun ProfileScreen(navHostController: NavHostController) {
                     colors = ButtonDefaults.buttonColors(colorResource(id = R.color.blue)),
                     onClick = {
                         prefHelper.clear()
+                        SocketHandler.closeConnection()
                         navHostController.navigate(VChatNavigationItem.LoginScreen.route) {
                             popUpTo(VChatNavigationItem.ProfileScreen.route) {
                                 inclusive = true

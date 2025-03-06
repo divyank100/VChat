@@ -1,10 +1,14 @@
 package com.example.vchat.util
 
+import android.icu.text.SimpleDateFormat
+import android.icu.util.TimeZone
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 object Util {
-    //    const val BASE_URL="https://localhost:3000/"
+    //        const val BASE_URL="https://localhost:3000/"
     const val BASE_URL = "https://vchat-mbd6.onrender.com/"
 
     fun isExpired(prefHelper: PrefHelper): Boolean {
@@ -24,5 +28,24 @@ object Util {
         } else {
             return true
         }
+    }
+
+    fun formatTimestamp(timestamp: String): String {
+        try {
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+            inputFormat.timeZone = TimeZone.getTimeZone("UTC") // Ensure UTC parsing
+
+            val outputFormat =
+                SimpleDateFormat("hh:mm a", Locale.getDefault()) // 12-hour format with AM/PM
+            outputFormat.timeZone = TimeZone.getDefault() // Convert to local timezone
+
+            val date: Date = inputFormat.parse(timestamp) ?: return "Just now"
+            return outputFormat.format(date)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return "Just now"
+        }
+        return "Just now"
+
     }
 }
