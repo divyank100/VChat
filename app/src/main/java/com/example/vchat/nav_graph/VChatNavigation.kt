@@ -1,5 +1,6 @@
 package com.example.vchat.nav_graph
 
+import ChatScreen
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -14,7 +15,6 @@ import androidx.navigation.navArgument
 import com.example.vchat.di.PrefHelperEntryPoint
 import com.example.vchat.screens.SplashScreen
 import com.example.vchat.screens.connected_all_chats.AllChats
-import com.example.vchat.screens.chat.ChatScreen
 import com.example.vchat.screens.connect_people.ConnectPeople
 import com.example.vchat.screens.forgot_password.ForgotPasswordScreen
 import com.example.vchat.screens.landing.LandingScreen
