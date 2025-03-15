@@ -1,5 +1,6 @@
 package com.example.vchat.ui.chat
 
+import android.media.MediaPlayer
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -33,6 +34,7 @@ class ChatViewModel : ViewModel() {
         setupSocketListeners()
         checkConnectionStatus()
     }
+
 
     private fun checkConnectionStatus() {
         _isConnected.value = socket.connected()
@@ -183,7 +185,7 @@ class ChatViewModel : ViewModel() {
                 messageId = UUID.randomUUID().toString(),
                 content = message,
                 senderId = userId,
-                timestamp = Util.formatTimestamp(currentTime),
+                timestamp = currentTime,
                 roomId = roomId
             )
 

@@ -1,3 +1,4 @@
+import android.media.MediaPlayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -59,6 +60,7 @@ import com.example.vchat.util.Util
 import com.zegocloud.uikit.prebuilt.call.invite.widget.ZegoSendCallInvitationButton
 import com.zegocloud.uikit.service.defines.ZegoUIKitUser
 import dagger.hilt.android.EntryPointAccessors
+import im.zego.zegoexpress.internal.ZegoMediaDataJniApi.seekTo
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -77,6 +79,11 @@ fun ChatScreen(navHostController: NavHostController, otherUserId: String?, userN
 
     var messageText by remember { mutableStateOf("") }
     val scrollState = rememberLazyListState()
+    val mediaPlayer = remember {
+        MediaPlayer.create(context, R.raw.message_notification)
+    }
+    var isFirstLoad by remember { mutableStateOf(true) }
+
 
     LaunchedEffect(key1 = Unit) {
         viewModel.connectUserToSocket()
@@ -105,6 +112,7 @@ fun ChatScreen(navHostController: NavHostController, otherUserId: String?, userN
         lifecycleOwner.lifecycle.addObserver(observer)
 
         onDispose {
+            mediaPlayer.release()
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
@@ -114,6 +122,15 @@ fun ChatScreen(navHostController: NavHostController, otherUserId: String?, userN
     LaunchedEffect(messages.size) {
         if (messages.isNotEmpty()) {
             scrollState.animateScrollToItem(messages.size - 1)
+            if (!isFirstLoad){
+                mediaPlayer.apply {
+                    seekTo(0)
+                    start()
+                }
+            }
+            else{
+                isFirstLoad = false
+            }
         }
     }
 
@@ -257,6 +274,10 @@ fun ChatScreen(navHostController: NavHostController, otherUserId: String?, userN
                             prefHelper.getString(AppConstants.userId) ?: "",
                             messageText
                         )
+                        mediaPlayer.apply {
+                            seekTo(0)
+                            start()
+                        }
                         messageText = ""
                     }
                 ) {
