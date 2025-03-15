@@ -34,7 +34,6 @@ class LoginViewModel @Inject constructor(
                 val token = Firebase.messaging.token.await()
                 if (token != null) {
                     prefHelper.putString(AppConstants.deviceToken, token)
-                    println("DEVICE TOKEN $token")
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

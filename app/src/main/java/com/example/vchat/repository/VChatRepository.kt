@@ -108,7 +108,6 @@ class VChatRepository @Inject constructor(
 
 
     suspend fun updateDeviceToken(userId: String): Response<Nothing> {
-        println("Inside repo$userId")
         TODO("Not yet implemented")
     }
 

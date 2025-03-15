@@ -46,7 +46,7 @@ class NetworkModule {
                 .addInterceptor(authInterceptor)
                 .addInterceptor(logging).build()
 
-        return Retrofit.Builder().baseUrl(Util.BASE_URL)
+        return Retrofit.Builder().baseUrl(AppConstants.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create()).client(client).build()
     }
 

@@ -10,12 +10,7 @@ object SocketHandler {
     @Synchronized
     fun setSocket() {
         try {
-        // "http://10.0.2.2:3000" is the network your Android emulator must use to join the localhost network on your computer
-        // "http://localhost:3000/" will not work
-        // If you want to use your physical phone you could use your ip address plus :3000
-        // This will allow your Android Emulator and physical device at your home to connect to the server
-            mSocket = IO.socket(Util.BASE_URL)
-            println("CONECTEDDDDD")
+            mSocket = IO.socket(AppConstants.BASE_URL)
         } catch (e: URISyntaxException) {
             e.printStackTrace()
         }
@@ -28,7 +23,6 @@ object SocketHandler {
 
     @Synchronized
     fun establishConnection() {
-        println("CONNECTION SUXXXX")
         mSocket.connect()
     }
 

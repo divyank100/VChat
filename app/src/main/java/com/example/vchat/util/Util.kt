@@ -8,9 +8,6 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 object Util {
-    //        const val BASE_URL="https://localhost:3000/"
-    const val BASE_URL = "https://vchat-mbd6.onrender.com/"
-
     fun isExpired(prefHelper: PrefHelper): Boolean {
         val previousTimeStamp = prefHelper.getString(AppConstants.currentTime)?.toLong()
         val expiryTime =

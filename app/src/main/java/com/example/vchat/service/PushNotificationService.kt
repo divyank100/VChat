@@ -6,14 +6,17 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.lifecycle.findViewTreeLifecycleOwner
 import com.example.vchat.R
 import com.example.vchat.VChat
 import com.example.vchat.repository.VChatRepository
 import com.example.vchat.util.PrefHelper
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class PushNotificationService :FirebaseMessagingService() {
@@ -23,25 +26,16 @@ class PushNotificationService :FirebaseMessagingService() {
 
     override fun onCreate() {
         super.onCreate()
-//        repository = VChatRepository()
-//        (application as VChat).appComponent.inject(this)
     }
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        println("NEW TOKEN RECEIVED $token")
-
-//        GlobalScope.launch {
-//            repository.updateDeviceToken("userId")
-//        }
-//        update to the server
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
 
         message.notification?.let {
-            Log.d("PushNotificationService", "Notification Body: ${it.body}")
             showNotification(it.title.toString(), it.body.toString())
         }
 
@@ -65,7 +59,7 @@ class PushNotificationService :FirebaseMessagingService() {
 
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setContentTitle(title)
-            .setSmallIcon(R.drawable.msg)
+            .setSmallIcon(R.drawable.chat_logo)
             .setContentText(body)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)

@@ -145,10 +145,6 @@ class ChatViewModel : ViewModel() {
     fun joinRoom(currentUserId: String, otherUserId: String) {
         val sortedIds = listOf(currentUserId, otherUserId).sorted()
         roomId = "${sortedIds[0]}-${sortedIds[1]}"
-        println("ID1 --- $currentUserId")
-        println("ID2 --- $otherUserId")
-        println("ROOM ID --- $roomId")
-
 
         val data = JSONObject().apply {
             put("userId", currentUserId)
@@ -178,11 +174,16 @@ class ChatViewModel : ViewModel() {
             }
             socket.emit("sendMessage", data)
 
+            val currentTime =
+                SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
+                    timeZone = TimeZone.getTimeZone("UTC")
+                }.format(Date())
+
             val newMessage = Message(
                 messageId = UUID.randomUUID().toString(),
                 content = message,
                 senderId = userId,
-                timestamp = Util.formatTimestamp("Just now"),
+                timestamp = Util.formatTimestamp(currentTime),
                 roomId = roomId
             )
 

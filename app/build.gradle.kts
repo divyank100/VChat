@@ -1,4 +1,6 @@
 import org.gradle.internal.impldep.org.junit.experimental.categories.Categories.CategoryFilter.exclude
+import java.io.FileInputStream
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -10,16 +12,34 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+val secretsFile = rootProject.file("secrets.properties")
+val secretsProperties = Properties()
+if (secretsFile.exists()) {
+    secretsProperties.load(FileInputStream(secretsFile))
+}
+
 android {
     namespace = "com.example.vchat"
     compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.vchat"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField("long", "APP_ID", "${secretsProperties.getProperty("APP_ID", "0")}L")
+        buildConfigField(
+            "String",
+            "APP_SIGN",
+            "\"${secretsProperties.getProperty("APP_SIGN", "")}\""
+        )
+        buildConfigField(
+            "String",
+            "BASE_URL",
+            "\"${secretsProperties.getProperty("BASE_URL", "")}\""
+        )
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -42,6 +62,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -91,6 +112,13 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.messaging)
     implementation(libs.coil.compose)
+    implementation("androidx.appcompat:appcompat:1.6.1")
+
+    implementation("com.github.ZEGOCLOUD:zego_uikit_prebuilt_call_android:+")
+    implementation(libs.permissionx)
+
+//    implementation 'com.github.ZEGOCLOUD:zego_uikit_android:2.13.0'
+//    implementation 'com.github.ZEGOCLOUD:zego_uikit_prebuilt_call_android:2.13.0'
 
 
 }

@@ -2,7 +2,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,11 +14,10 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -43,8 +41,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -56,7 +56,13 @@ import com.example.vchat.models.message.Message
 import com.example.vchat.ui.chat.ChatViewModel
 import com.example.vchat.util.AppConstants
 import com.example.vchat.util.Util
+import com.zegocloud.uikit.prebuilt.call.invite.widget.ZegoSendCallInvitationButton
+import com.zegocloud.uikit.service.defines.ZegoUIKitUser
 import dagger.hilt.android.EntryPointAccessors
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 @Composable
 fun ChatScreen(navHostController: NavHostController, otherUserId: String?, userName: String?) {
@@ -109,8 +115,15 @@ fun ChatScreen(navHostController: NavHostController, otherUserId: String?, userN
         if (messages.isNotEmpty()) {
             scrollState.animateScrollToItem(messages.size - 1)
         }
-        println("MESG ARRAY --- $messages")
     }
+
+    val groupedMessages = messages.groupBy { message ->
+        val date = parseMessageDate(message.timestamp)
+        formatDateForGrouping(date)
+    }
+
+
+
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
@@ -154,17 +167,33 @@ fun ChatScreen(navHostController: NavHostController, otherUserId: String?, userN
                         fontWeight = FontWeight.SemiBold
                     )
                 }
-                IconButton(
-                    modifier = Modifier.size(22.dp),
-                    onClick = {
 
+                Row {
+                    CallButton(
+                        isVideoCall = false
+                    ) { button ->
+                        if (userName!!.isNotEmpty()) button.setInvitees(
+                            mutableListOf(
+                                ZegoUIKitUser(
+                                    userName.toString(), userName.toString()
+                                )
+                            )
+                        )
                     }
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_call),
-                        contentDescription = "call_icon"
-                    )
+
+                    CallButton(
+                        isVideoCall = true
+                    ) { button ->
+                        if (userName!!.isNotEmpty()) button.setInvitees(
+                            mutableListOf(
+                                ZegoUIKitUser(
+                                    userName.toString(), userName.toString()
+                                )
+                            )
+                        )
+                    }
                 }
+
             }
 
 
@@ -172,9 +201,20 @@ fun ChatScreen(navHostController: NavHostController, otherUserId: String?, userN
                 modifier = Modifier.weight(1.0f),
                 state = scrollState
             ) {
-                items(messages) { message ->
-                    ChatBubble(message, prefHelper.getString(AppConstants.userId) ?: "")
+
+                groupedMessages.forEach { (date, messagesForDate) ->
+                    item {
+                        DateHeader(date)
+                    }
+
+                    items(messagesForDate) { message ->
+                        ChatBubble(message, prefHelper.getString(AppConstants.userId) ?: "")
+                    }
                 }
+
+//                items(messages) { message ->
+//                    ChatBubble(message, prefHelper.getString(AppConstants.userId) ?: "")
+//                }
             }
 
             Row(
@@ -284,6 +324,78 @@ fun ChatBubble(message: Message, currentUserId: String) {
                 fontFamily = FontFamily(Font(R.font.inter))
             )
 
+        }
+    }
+}
+
+@Composable
+fun DateHeader(date: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = Color(0xFFE0E0E0),
+            modifier = Modifier.padding(horizontal = 16.dp)
+        ) {
+            Text(
+                text = date,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                fontFamily = FontFamily(Font(R.font.inter))
+            )
+        }
+    }
+}
+
+@Composable
+fun CallButton(isVideoCall: Boolean, onClick: (ZegoSendCallInvitationButton) -> Unit) {
+    AndroidView(factory = { context ->
+        val button = ZegoSendCallInvitationButton(context)
+        button.setIsVideoCall(isVideoCall)
+        button.resourceID = "zego_data"
+        button
+    }, modifier = Modifier.size(30.dp)) { zegoCallButton ->
+        zegoCallButton.setOnClickListener { _ -> onClick(zegoCallButton) }
+    }
+}
+
+fun parseMessageDate(timestamp: String): Date {
+    try {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+        inputFormat.timeZone = TimeZone.getTimeZone("UTC")
+        return inputFormat.parse(timestamp) ?: Date()
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return Date()
+    }
+}
+
+
+fun formatDateForGrouping(date: Date): String {
+    val calendar = java.util.Calendar.getInstance()
+    val today = java.util.Calendar.getInstance()
+    val yesterday = java.util.Calendar.getInstance()
+    yesterday.add(java.util.Calendar.DAY_OF_YEAR, -1)
+
+    calendar.time = date
+
+    return when {
+        calendar.get(java.util.Calendar.YEAR) == today.get(java.util.Calendar.YEAR) &&
+                calendar.get(java.util.Calendar.DAY_OF_YEAR) == today.get(java.util.Calendar.DAY_OF_YEAR) -> {
+            "Today"
+        }
+        calendar.get(java.util.Calendar.YEAR) == yesterday.get(java.util.Calendar.YEAR) &&
+                calendar.get(java.util.Calendar.DAY_OF_YEAR) == yesterday.get(java.util.Calendar.DAY_OF_YEAR) -> {
+            "Yesterday"
+        }
+        else -> {
+            SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).format(date)
         }
     }
 }

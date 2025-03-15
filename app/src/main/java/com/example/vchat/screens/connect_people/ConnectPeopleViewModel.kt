@@ -27,7 +27,6 @@ class ConnectPeopleViewModel @Inject constructor(private val repository: VChatRe
                 connectPeopleResponse.value = ApiState.Loading
                 val response = repository.getAllUsers(userIdRequest)
                 if (response.isSuccessful) {
-                    println("RESPONSE BODY----- ${response.body()}")
                     connectPeopleResponse.value = ApiState.Success(response.body()!!)
                 } else {
                     val errorBody = response.errorBody()?.string()

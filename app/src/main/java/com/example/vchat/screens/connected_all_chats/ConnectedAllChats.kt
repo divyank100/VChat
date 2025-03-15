@@ -48,15 +48,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.example.vchat.MainActivity
 import com.example.vchat.R
 import com.example.vchat.di.PrefHelperEntryPoint
 import com.example.vchat.models.get_connections.UserConnectionResponse
 import com.example.vchat.models.login.User
 import com.example.vchat.models.useridRequest.UserIdRequest
 import com.example.vchat.nav_graph.VChatNavigationItem
+import com.example.vchat.service.ZegoCloudService
 import com.example.vchat.util.ApiState
 import com.example.vchat.util.AppConstants
 import com.example.vchat.util.SocketHandler
+import com.google.gson.Gson
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.delay
 
@@ -66,7 +69,7 @@ fun AllChats(navHostController: NavHostController) {
 
     val viewModel: ConnectedChatsViewModel = hiltViewModel()
     val userConnectionState by viewModel.connectPeopleResponse.collectAsState()
-    val context = LocalContext.current
+    val context = LocalContext.current as MainActivity
     val prefHelper = EntryPointAccessors.fromApplication(
         context,
         PrefHelperEntryPoint::class.java
@@ -77,13 +80,17 @@ fun AllChats(navHostController: NavHostController) {
     var searchQuery by remember { mutableStateOf("") }
     var userList by remember { mutableStateOf(listOf<User>()) }
     var searchResults by remember { mutableStateOf(listOf<User>()) }
+    val gson = Gson()
+    val json: String? = prefHelper.getString(AppConstants.userData)
+    val user: User? = gson.fromJson(json, User::class.java)
 
     LaunchedEffect(Unit) {
         SocketHandler.setSocket()
         SocketHandler.establishConnection()
+        context.initZegoInviteService(AppConstants.APP_ID, AppConstants.APP_SIGN, user?.userName!!, user.userName)
         viewModel.getConnections(
             userIdRequest = UserIdRequest(
-                prefHelper.getString(AppConstants.userId) ?: ""
+                user.id
             )
         )
     }
@@ -111,7 +118,6 @@ fun AllChats(navHostController: NavHostController) {
         searchResults = if (searchQuery.isEmpty()) userList else userList.filter {
             it.userName.contains(searchQuery, ignoreCase = true)
         }
-        println("SEARCH RESULT LIST----- $searchResults")
     }
 
     Scaffold { innerPadding ->
