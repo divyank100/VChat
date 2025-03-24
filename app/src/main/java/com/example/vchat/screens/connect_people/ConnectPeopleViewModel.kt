@@ -1,5 +1,6 @@
 package com.example.vchat.screens.connect_people
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vchat.models.connectUser.ConnectUserRequest
@@ -21,9 +22,10 @@ class ConnectPeopleViewModel @Inject constructor(private val repository: VChatRe
     val connectPeopleResponse = MutableStateFlow<ApiState<UserConnectionResponse>?>(null)
     val connectUserResponse = MutableStateFlow<ApiState<ConnectUserResponse>?>(null)
 
-    fun getAllUsers(userIdRequest: UserIdRequest) {
+    fun getAllUsers(userIdRequest: UserIdRequest,context:Context) {
         viewModelScope.launch {
             try {
+                repository.refreshToken(context)
                 connectPeopleResponse.value = ApiState.Loading
                 val response = repository.getAllUsers(userIdRequest)
                 if (response.isSuccessful) {
@@ -46,9 +48,10 @@ class ConnectPeopleViewModel @Inject constructor(private val repository: VChatRe
         }
     }
 
-    fun connectUser(connectUserRequest: ConnectUserRequest) {
+    fun connectUser(connectUserRequest: ConnectUserRequest,context:Context) {
         viewModelScope.launch {
             try {
+                repository.refreshToken(context)
                 connectUserResponse.value = ApiState.Loading
                 val response = repository.connectUser(connectUserRequest)
                 if (response.isSuccessful) {

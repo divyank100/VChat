@@ -35,7 +35,7 @@ class VChatRepository @Inject constructor(
             if (Util.isExpired(prefHelper) || isApiCall == true) {
                 DataCache.refreshToken = prefHelper.getString(AppConstants.refreshToken)
                 val token = TokenRequestJWT(
-                    DataCache.refreshToken ?: ""
+                    prefHelper.getString(AppConstants.refreshToken) ?: ""
                 )
                 val response = vChatApi.refreshToken(token)
                 if (response.isSuccessful) {
@@ -51,7 +51,7 @@ class VChatRepository @Inject constructor(
                     )
                     prefHelper.putString(
                         AppConstants.expiryTime,
-                        TimeUnit.SECONDS.toMillis("100000".toLong())
+                        TimeUnit.SECONDS.toMillis("3000".toLong())
                             .toString()
                     )
                 } else {

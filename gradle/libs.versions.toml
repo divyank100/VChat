@@ -1,6 +1,7 @@
 [versions]
 agp = "8.7.0"
 coilCompose = "2.4.0"
+firebaseAuthKtxVersion = "22.3.1"
 firebaseBom = "33.7.0"
 kotlin = "2.0.0"
 coreKtx = "1.15.0"
@@ -24,6 +25,7 @@ kapt="1.8.10"
 androidxLifecycle = "2.6.1"
 kotlinxCoroutines = "1.7.3"
 permissionx = "1.8.0"
+playServicesAuth = "21.3.0"
 retrofit = "2.9.0"
 okhttp = "4.10.0"
 hiltNavigationCompose = "1.0.0"
@@ -33,6 +35,7 @@ hiltNavigationCompose = "1.0.0"
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-auth-ktx-v2231 = { module = "com.google.firebase:firebase-auth-ktx", version.ref = "firebaseAuthKtxVersion" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -60,6 +63,7 @@ androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifec
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
 permissionx = { module = "com.guolindev.permissionx:permissionx", version.ref = "permissionx" }
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 retrofit-core = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }

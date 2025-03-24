@@ -26,7 +26,7 @@ import com.example.vchat.util.AppConstants
 import dagger.hilt.android.EntryPointAccessors
 
 @Composable
-fun VChatNavigation(navHostController: NavHostController) {
+fun VChatNavigation(navHostController: NavHostController,isDarkTheme:Boolean=false) {
     val context = LocalContext.current
     val prefHelper = EntryPointAccessors.fromApplication(
         context,
@@ -71,7 +71,7 @@ fun VChatNavigation(navHostController: NavHostController) {
             composable(VChatNavigationItem.ConnectPeople.route) {
                 ConnectPeople(navHostController)
             }
-            composable(VChatNavigationItem.ChatScreen.route + "/{userId}"+"/{userName}",
+            composable(VChatNavigationItem.ChatScreen.route + "/{userId}"+"/{userName}"+"/{userStatus}",
                 arguments = listOf(
                     navArgument(
                         name = "userId",
@@ -85,11 +85,18 @@ fun VChatNavigation(navHostController: NavHostController) {
                             type = NavType.StringType
                         }
                     ),
+                    navArgument(
+                        name = "userStatus",
+                        builder = {
+                            type = NavType.BoolType
+                        }
+                    ),
                 )
             ) {
                 val userId=it.arguments?.getString("userId")
                 val userName=it.arguments?.getString("userName")
-                ChatScreen(navHostController,userId,userName)
+                val userStatus=it.arguments?.getBoolean("userStatus")
+                ChatScreen(navHostController,userId,userName,userStatus ?: false)
             }
             composable(VChatNavigationItem.RequestScreen.route) {
                 RequestScreen(navHostController)

@@ -65,4 +65,10 @@ class LoginViewModel @Inject constructor(
             }
         }
     }
+
+    fun clearLoginState() {
+        loginUserResponse.value = null
+    }
+
+
 }

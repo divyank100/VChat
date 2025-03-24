@@ -10,6 +10,7 @@ object AppConstants {
     const val currentTime = "currentTime"
     const val accessToken = "accessToken"
     const val refreshToken = "refreshToken"
+    const val userTheme = "userTheme"
     const val APP_ID: Long = BuildConfig.APP_ID
     const val APP_SIGN = BuildConfig.APP_SIGN
     const val BASE_URL = BuildConfig.BASE_URL

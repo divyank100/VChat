@@ -112,6 +112,11 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.messaging)
     implementation(libs.coil.compose)
+    // Firebase core
+    implementation(libs.firebase.auth.ktx.v2231)
+
+    // Google Play services for authentication
+    implementation(libs.play.services.auth)
     implementation("androidx.appcompat:appcompat:1.6.1")
 
     implementation("com.github.ZEGOCLOUD:zego_uikit_prebuilt_call_android:+")

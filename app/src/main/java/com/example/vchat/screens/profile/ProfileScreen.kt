@@ -15,9 +15,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchColors
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,8 +28,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -37,7 +37,6 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -49,7 +48,12 @@ import com.example.vchat.nav_graph.VChatNavigationItem
 import com.example.vchat.util.AppConstants
 import com.example.vchat.util.SocketHandler
 import com.google.gson.Gson
+import com.zegocloud.uikit.prebuilt.call.ZegoUIKitPrebuiltCallService
 import dagger.hilt.android.EntryPointAccessors
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileScreen(navHostController: NavHostController) {
@@ -62,20 +66,25 @@ fun ProfileScreen(navHostController: NavHostController) {
     val gson = Gson()
     val json: String? = prefHelper.getString(AppConstants.userData)
     val user: User? = gson.fromJson(json, User::class.java)
-    var notificationsEnabled by remember { mutableStateOf(true) }
+    val isDarkThemePresent=prefHelper.getBoolean(AppConstants.userTheme)
+
+    println("isDark Theme $isDarkThemePresent")
+
+    var darkTheme by remember { mutableStateOf(isDarkThemePresent) }
 
     Scaffold { innerPadding ->
+        val colorScheme = MaterialTheme.colorScheme
+
         Box(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .background(color = colorResource(R.color.white))
+                .background(colorScheme.background)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(15.dp),
-//                verticalArrangement = Arrangement.Center
             ) {
                 Text(
                     modifier = Modifier
@@ -83,19 +92,19 @@ fun ProfileScreen(navHostController: NavHostController) {
                         .padding(15.dp, 25.dp, 15.dp, 15.dp),
                     text = "Settings",
                     fontFamily = FontFamily(Font(R.font.inter)),
-                    color = colorResource(R.color.blue),
+                    color = colorScheme.onBackground,
                     textAlign = TextAlign.Center,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold
                 )
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
                         .padding(vertical = 10.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(color = colorResource(R.color.off_white)),
-//                        .shadow(5.dp, RoundedCornerShape(7.dp)),
+                        .background(colorScheme.surface),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Image(
@@ -120,7 +129,7 @@ fun ProfileScreen(navHostController: NavHostController) {
                         Text(
                             text = user?.userName ?: "Divyank Singh",
                             fontFamily = FontFamily(Font(R.font.inter)),
-                            color = colorResource(R.color.black),
+                            color = colorScheme.onSurface,
                             textAlign = TextAlign.Center,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold
@@ -128,116 +137,74 @@ fun ProfileScreen(navHostController: NavHostController) {
                         Text(
                             text = user?.email ?: "divyanksingh000@gmail.com",
                             fontFamily = FontFamily(Font(R.font.inter)),
-                            color = colorResource(R.color.black),
+                            color = colorScheme.onSurface,
                             textAlign = TextAlign.Center,
                             fontSize = 16.sp,
                         )
                     }
-
-
                 }
+
                 Row(
                     modifier = Modifier
                         .padding(vertical = 10.dp)
                         .fillMaxWidth()
                         .wrapContentHeight()
                         .clip(RoundedCornerShape(10.dp))
-                        .background(color = colorResource(R.color.off_white))
+                        .background(colorScheme.surface)
                         .padding(7.dp),
-//                        .shadow(5.dp, RoundedCornerShape(7.dp)),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         modifier = Modifier
                             .padding(10.dp),
-                        text = "Notifications",
+                        text = "Dark Theme",
                         fontFamily = FontFamily(Font(R.font.inter)),
-                        color = colorResource(R.color.black),
+                        color = colorScheme.onSurface,
                         textAlign = TextAlign.Center,
                         fontSize = 18.sp,
                     )
                     Switch(
                         onCheckedChange = {
-                            notificationsEnabled = !notificationsEnabled
-//                            api call to server
+                            darkTheme = !darkTheme
+                            prefHelper.putBoolean(AppConstants.userTheme, darkTheme)
                         },
-
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = colorResource(R.color.blue),
-                            checkedTrackColor = colorResource(R.color.light_blue),
-                            uncheckedThumbColor = colorResource(R.color.light_grey),
-                            checkedBorderColor = colorResource(R.color.white),
-                            uncheckedBorderColor = colorResource(R.color.white),
+                            checkedThumbColor = colorScheme.primary,
+                            checkedTrackColor = colorScheme.secondary,
+                            uncheckedThumbColor = colorScheme.tertiary,
+                            checkedBorderColor = colorScheme.surface,
+                            uncheckedBorderColor = colorScheme.surface,
+                            uncheckedTrackColor = colorScheme.secondary
                         ),
-                        checked = notificationsEnabled,
+                        checked = darkTheme,
+                    )
+                }
 
+                listOf(
+                    "Security & Privacy",
+                    "Help & Information Center",
+                    "Report"
+                ).forEach { text ->
+                    Row(
+                        modifier = Modifier
+                            .padding(vertical = 10.dp)
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(colorScheme.surface)
+                            .padding(7.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .padding(10.dp),
+                            text = text,
+                            fontFamily = FontFamily(Font(R.font.inter)),
+                            color = colorScheme.onSurface,
+                            textAlign = TextAlign.Center,
+                            fontSize = 18.sp,
                         )
-                }
-
-                Row(
-                    modifier = Modifier
-                        .padding(vertical = 10.dp)
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(color = colorResource(R.color.off_white))
-                        .padding(7.dp),
-//                        .shadow(5.dp, RoundedCornerShape(7.dp)),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(10.dp),
-                        text = "Security & Privacy",
-                        fontFamily = FontFamily(Font(R.font.inter)),
-                        color = colorResource(R.color.black),
-                        textAlign = TextAlign.Center,
-                        fontSize = 18.sp,
-                    )
-                }
-
-                Row(
-                    modifier = Modifier
-                        .padding(vertical = 10.dp)
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(color = colorResource(R.color.off_white))
-                        .padding(7.dp),
-//                        .shadow(5.dp, RoundedCornerShape(7.dp)),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(10.dp),
-                        text = "Help & Information Center",
-                        fontFamily = FontFamily(Font(R.font.inter)),
-                        color = colorResource(R.color.black),
-                        textAlign = TextAlign.Center,
-                        fontSize = 18.sp,
-                    )
-                }
-
-                Row(
-                    modifier = Modifier
-                        .padding(vertical = 10.dp)
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(color = colorResource(R.color.off_white))
-                        .padding(7.dp),
-//                        .shadow(5.dp, RoundedCornerShape(7.dp)),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(10.dp),
-                        text = "Report",
-                        fontFamily = FontFamily(Font(R.font.inter)),
-                        color = colorResource(R.color.black),
-                        textAlign = TextAlign.Center,
-                        fontSize = 18.sp,
-                    )
+                    }
                 }
 
                 Button(
@@ -245,18 +212,23 @@ fun ProfileScreen(navHostController: NavHostController) {
                         .fillMaxWidth()
                         .padding(vertical = 40.dp),
                     shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(colorResource(id = R.color.blue)),
+                    colors = ButtonDefaults.buttonColors(containerColor = colorScheme.primary),
                     onClick = {
-                        prefHelper.clear()
-                        SocketHandler.closeConnection()
-                        navHostController.navigate(VChatNavigationItem.LoginScreen.route) {
-                            popUpTo(VChatNavigationItem.ProfileScreen.route) {
-                                inclusive = true
+                        CoroutineScope(Dispatchers.Main).launch {
+                            SocketHandler.leaveUserConnection(user?.id ?: "") {
+                                prefHelper.clear()
+                                ZegoUIKitPrebuiltCallService.unInit()
+                                prefHelper.putBoolean(AppConstants.userTheme, false)
+                                SocketHandler.closeConnection()
+                                navHostController.navigate(VChatNavigationItem.LoginScreen.route) {
+                                    popUpTo(VChatNavigationItem.ProfileScreen.route) {
+                                        inclusive = true
+                                    }
+                                }
                             }
                         }
                     }
                 ) {
-
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
@@ -266,7 +238,7 @@ fun ProfileScreen(navHostController: NavHostController) {
                             modifier = Modifier.padding(0.dp, 7.dp),
                             fontFamily = FontFamily(Font(R.font.inter)),
                             text = "Logout",
-                            color = Color.White,
+                            color = colorScheme.onPrimary,
                             fontSize = 16.sp,
                             textAlign = TextAlign.Center,
                         )
@@ -275,16 +247,15 @@ fun ProfileScreen(navHostController: NavHostController) {
                                 .padding(10.dp, 5.dp)
                                 .size(16.dp),
                             painter = painterResource(id = R.drawable.ic_logout),
-                            contentDescription = "logout_img"
+                            contentDescription = "logout_img",
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary)
                         )
-
                     }
-
                 }
-
             }
         }
     }
+
 }
 
 //@Composable

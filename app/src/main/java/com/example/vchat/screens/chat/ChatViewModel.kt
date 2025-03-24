@@ -4,6 +4,7 @@ import android.media.MediaPlayer
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.vchat.models.UserStatus
 import com.example.vchat.models.message.Message
 import com.example.vchat.util.AppConstants
 import com.example.vchat.util.SocketHandler
@@ -25,10 +26,15 @@ class ChatViewModel : ViewModel() {
     private val _messages = MutableStateFlow<List<Message>>(emptyList())
     val messages = _messages.asStateFlow()
 
+    private val _isOtherUserOnline = MutableStateFlow(UserStatus("", false))
+    val isOtherUserOnline: StateFlow<UserStatus> = _isOtherUserOnline.asStateFlow()
+
+
     private val _isConnected = MutableStateFlow(false)
     val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
 
     var roomId = ""
+    private var listenersSetup = false
 
     init {
         setupSocketListeners()
@@ -41,6 +47,9 @@ class ChatViewModel : ViewModel() {
     }
 
     private fun setupSocketListeners() {
+        if (listenersSetup) return
+        listenersSetup = true
+
         socket.on(Socket.EVENT_CONNECT) {
             Log.d(TAG, "Socket connected")
             _isConnected.value = true
@@ -54,6 +63,23 @@ class ChatViewModel : ViewModel() {
         socket.on(Socket.EVENT_CONNECT_ERROR) { args ->
             Log.e(TAG, "Connection error: ${args[0]}")
             _isConnected.value = false
+        }
+
+        socket?.on("user_status_change") { args ->
+            Log.d(TAG, "User status changed")
+            if (args.isNotEmpty()) {
+                try {
+                    val data = args[0] as JSONObject
+                    val userStatus =
+                        UserStatus(data.getString("userId"), data.getBoolean("online_status"))
+                    _isOtherUserOnline.value = userStatus
+
+                    println("ONLINE STATUS---- ${data.getString("online_status")}")
+                    println("USERIDDDDD---- ${data.getString("userId")}")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error parsing previousMessages array", e)
+                }
+            }
         }
 
         socket.on("previousMessages") { args ->
@@ -105,6 +131,7 @@ class ChatViewModel : ViewModel() {
                         }
                     }.filterNotNull()
                     _messages.value = messagesList
+                    println("MSG HISTORY---- ${_messages.value}")
                 } catch (e: Exception) {
                     Log.e(TAG, "Error parsing messageHistory array", e)
                 }
@@ -126,7 +153,10 @@ class ChatViewModel : ViewModel() {
                     )
 
                     // Check if message is for current room
-                    if (newMessage.roomId == roomId) {
+                    if (newMessage.roomId == roomId &&
+                        !_messages.value.any { it.messageId == newMessage.messageId }
+                    ) {
+                        println("%%%%%NEW MSGGG RECEIVEDDD")
                         _messages.value = _messages.value + newMessage
                     }
                 } catch (e: Exception) {
@@ -146,7 +176,11 @@ class ChatViewModel : ViewModel() {
 
     fun joinRoom(currentUserId: String, otherUserId: String) {
         val sortedIds = listOf(currentUserId, otherUserId).sorted()
+        println("currentId ${currentUserId}")
+        println("otherId ${otherUserId}")
+        println("SORTED IDS ${sortedIds}")
         roomId = "${sortedIds[0]}-${sortedIds[1]}"
+        println("ROOM ID ${roomId}")
 
         val data = JSONObject().apply {
             put("userId", currentUserId)
@@ -193,6 +227,17 @@ class ChatViewModel : ViewModel() {
         }
     }
 
+    fun removeSocketListeners() {
+        socket.off(Socket.EVENT_CONNECT)
+        socket.off(Socket.EVENT_DISCONNECT)
+        socket.off(Socket.EVENT_CONNECT_ERROR)
+        socket.off("user_status_change")
+        socket.off("previousMessages")
+        socket.off("messageHistory")
+        socket.off("message")
+        listenersSetup = false
+    }
+
     fun disconnectSocket() {
         if (socket.connected()) {
             socket.disconnect()
@@ -201,6 +246,7 @@ class ChatViewModel : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
+        removeSocketListeners()
         // No need to disconnect here if you want to maintain the socket connection
         // across different screens. If you want to disconnect, uncomment:
         // socket.disconnect()

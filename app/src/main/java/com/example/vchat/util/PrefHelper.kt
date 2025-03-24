@@ -35,6 +35,14 @@ class PrefHelper(context: Context) {
         editor.putLong(key, value).apply()
     }
 
+    fun registerPreferenceChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
+        sharedPref.registerOnSharedPreferenceChangeListener(listener)
+    }
+
+    fun unregisterPreferenceChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
+        sharedPref.unregisterOnSharedPreferenceChangeListener(listener)
+    }
+
     fun clear() {
         editor.clear().apply()
     }

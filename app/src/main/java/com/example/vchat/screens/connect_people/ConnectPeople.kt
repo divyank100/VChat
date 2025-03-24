@@ -1,5 +1,6 @@
 package com.example.vchat.screens.connect_people
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -15,7 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -25,6 +25,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
@@ -39,9 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -49,6 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
@@ -87,7 +89,7 @@ fun ConnectPeople(navHostController: NavHostController) {
         viewModel.getAllUsers(
             userIdRequest = UserIdRequest(
                 prefHelper.getString(AppConstants.userId) ?: ""
-            )
+            ),context
         )
     }
 
@@ -98,7 +100,7 @@ fun ConnectPeople(navHostController: NavHostController) {
                 viewModel.getAllUsers(
                     userIdRequest = UserIdRequest(
                         prefHelper.getString(AppConstants.userId) ?: ""
-                    )
+                    ),context
                 )
             }
 
@@ -123,7 +125,7 @@ fun ConnectPeople(navHostController: NavHostController) {
                     val connectedUserPresent =
                         user.connections.find { prefHelper.getString(AppConstants.userId) == it.user }
                     if (requestedUserPresent != null) {
-                        user.connectionStatus = "Requested"
+                        user.connectionStatus = "Pending"
                     } else if (connectedUserPresent != null) {
                         user.connectionStatus = "Connected"
                     } else {
@@ -151,12 +153,13 @@ fun ConnectPeople(navHostController: NavHostController) {
 
 
     Scaffold { innerPadding ->
+        val colors = MaterialTheme.colorScheme
 
         Column(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .background(color = Color.White),
+                .background(color = colors.surface),
         ) {
             SearchBar(
                 modifier = Modifier
@@ -165,9 +168,8 @@ fun ConnectPeople(navHostController: NavHostController) {
                     .padding(16.dp, 10.dp, 16.dp, 16.dp),
                 shape = RoundedCornerShape(5.dp),
                 query = searchQuery,
-//                shadowElevation = 2.dp,
                 colors = SearchBarDefaults.colors(
-                    containerColor = colorResource(R.color.off_white)
+                    containerColor = colorScheme.surface
                 ),
                 onQueryChange = {
                     searchQuery = it
@@ -176,7 +178,7 @@ fun ConnectPeople(navHostController: NavHostController) {
                     Text(
                         text = "Search by name",
                         fontFamily = FontFamily(Font(R.font.inter)),
-                        color = Color.LightGray
+                        color = colors.onTertiary.copy(alpha = 0.6f)
                     )
                 },
                 onSearch = {
@@ -191,15 +193,15 @@ fun ConnectPeople(navHostController: NavHostController) {
                     }
                 },
                 leadingIcon = {
-                    Image(
+                    Icon(
                         painter = painterResource(R.drawable.ic_search),
                         contentDescription = "Search icon",
                         modifier = Modifier
                             .size(30.dp)
                             .clip(CircleShape),
+                        tint = colors.onTertiary
                     )
                 }
-
             ) {
                 if (searchQuery.isEmpty()) {
                     Text(
@@ -208,37 +210,40 @@ fun ConnectPeople(navHostController: NavHostController) {
                             .align(Alignment.CenterHorizontally),
                         text = "No users found",
                         fontFamily = FontFamily(Font(R.font.inter)),
-                        color = Color.Black
+                        color = colors.onSurface
                     )
                 } else {
-                    ConnectedUsers(searchResults, navHostController, viewModel, prefHelper)
+                    ConnectedUsers(searchResults, navHostController, viewModel, prefHelper,context)
                 }
             }
+
             if (userConnectionState is ApiState.Loading) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.White)
-                        .wrapContentSize(Alignment.Center)
+                        .background(colors.surface.copy(alpha = 0.7f))
+                        .clickable(enabled = false) {}
+                        .then(Modifier.zIndex(10f)),
+                    contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(
-                        color = colorResource(id = R.color.blue),
+                        color = colors.primary,
                         strokeWidth = 4.dp
                     )
                 }
             }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 5.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-
                 Text(
                     text = "Connect People",
                     fontFamily = FontFamily(Font(R.font.inter)),
                     fontSize = 22.sp,
-                    color = colorResource(R.color.blue),
+                    color = colors.primary,
                     fontWeight = FontWeight.SemiBold,
                 )
 
@@ -249,14 +254,13 @@ fun ConnectPeople(navHostController: NavHostController) {
                     text = "Requests",
                     fontFamily = FontFamily(Font(R.font.inter)),
                     fontSize = 16.sp,
-                    color = colorResource(R.color.blue),
+                    color = colors.primary,
                     textDecoration = TextDecoration.Underline
                 )
-
             }
-            ConnectedUsers(searchResults, navHostController, viewModel, prefHelper)
-        }
 
+            ConnectedUsers(searchResults, navHostController, viewModel, prefHelper, context)
+        }
     }
 
 }
@@ -266,14 +270,16 @@ private fun ConnectedUsers(
     users: List<User>,
     navHostController: NavHostController,
     viewModel: ConnectPeopleViewModel,
-    prefHelper: PrefHelper
-) {
+    prefHelper: PrefHelper,
+    context: Context,
+
+    ) {
 
     LazyColumn(
         modifier = Modifier.padding(0.dp,15.dp,0.dp,5.dp)
     ) {
         items(users) { user ->
-            UserCard(user, viewModel, prefHelper)
+            UserCard(user, viewModel, prefHelper,context)
         }
     }
 }
@@ -282,14 +288,16 @@ private fun ConnectedUsers(
 fun UserCard(
     user: User,
     viewModel: ConnectPeopleViewModel,
-    prefHelper: PrefHelper
+    prefHelper: PrefHelper,
+    context: Context
 ) {
+    val colors = MaterialTheme.colorScheme
 
     Column(
         modifier = Modifier
             .wrapContentHeight()
             .fillMaxWidth()
-            .background(Color.White)
+            .background(colors.surface)
     ) {
         Row(
             modifier = Modifier
@@ -315,7 +323,6 @@ fun UserCard(
                     .fillMaxSize()
                     .padding(25.dp, 5.dp),
                 verticalArrangement = Arrangement.SpaceAround
-
             ) {
                 Text(
                     modifier = Modifier
@@ -323,7 +330,7 @@ fun UserCard(
                         .fillMaxHeight(0.4f),
                     text = user.userName,
                     fontFamily = FontFamily(Font(R.font.inter)),
-                    color = Color.Black,
+                    color = colors.onSurface,
                     fontSize = 16.sp
                 )
                 Button(
@@ -336,15 +343,12 @@ fun UserCard(
                             ConnectUserRequest(
                                 prefHelper.getString(AppConstants.userId) ?: "",
                                 user.id
-                            )
+                            ), context = context
                         )
-//                        btnText = "Requested"
-//                        btnEnable = false
-//                        btnTextColor = Color.Black
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = colorResource(R.color.blue),
-                        disabledContainerColor = colorResource(R.color.light_blue),
+                        containerColor = colors.primary,
+                        disabledContainerColor = colors.secondary,
                     ),
                     elevation = ButtonDefaults.buttonElevation(
                         defaultElevation = 5.dp,
@@ -354,15 +358,17 @@ fun UserCard(
                     Text(
                         text = user.connectionStatus,
                         fontFamily = FontFamily(Font(R.font.inter)),
-                        color = if (user.connectionStatus == "Connect") Color.White else Color.Black
+                        color = if (user.connectionStatus == "Connect")
+                            colors.onPrimary
+                        else
+                            colors.onSecondary
                     )
                 }
             }
         }
         HorizontalDivider(
-            modifier = Modifier.padding(10.dp)
+            modifier = Modifier.padding(start = 80.dp, top = 5.dp, bottom = 5.dp),
+            color = colors.tertiary.copy(alpha = 0.5f)
         )
     }
-
-
 }

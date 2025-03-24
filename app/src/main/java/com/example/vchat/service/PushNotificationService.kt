@@ -26,14 +26,20 @@ class PushNotificationService :FirebaseMessagingService() {
 
     override fun onCreate() {
         super.onCreate()
+        println("PushNotificationService")
+        Log.d("PushNotificationService", "Service created")
     }
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
+        println("PushNotificationService")
+        Log.d("PushNotificationService", "New token")
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
+        println("PushNotificationService")
+        Log.d("PushNotificationService", "Message received: ${message.notification?.title}")
 
         message.notification?.let {
             showNotification(it.title.toString(), it.body.toString())
@@ -52,7 +58,7 @@ class PushNotificationService :FirebaseMessagingService() {
             val channel = NotificationChannel(
                 channelId,
                 channelName,
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_HIGH
             )
             notificationManager.createNotificationChannel(channel)
         }

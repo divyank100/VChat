@@ -1,5 +1,6 @@
 package com.example.vchat.screens.requests
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vchat.models.connectUser.ConnectUserRequest
@@ -22,10 +23,11 @@ class RequestViewModel @Inject constructor(private val repository: VChatReposito
     val rejectRequestResponse = MutableStateFlow<ApiState<RespondRequestResponse>?>(null)
     val getRequestsResponse = MutableStateFlow<ApiState<GetAllRequestResponse>?>(null)
 
-    fun getRequests(userIdRequest: UserIdRequest) {
+    fun getRequests(userIdRequest: UserIdRequest,context: Context) {
         viewModelScope.launch {
             try {
                 getRequestsResponse.value = ApiState.Loading
+                repository.refreshToken(context)
                 val response = repository.getRequests(userIdRequest)
                 if (response.isSuccessful) {
                     getRequestsResponse.value = ApiState.Success(response.body()!!)
@@ -47,10 +49,11 @@ class RequestViewModel @Inject constructor(private val repository: VChatReposito
         }
     }
 
-    fun acceptConnectionRequest(connectUserRequest: ConnectUserRequest) {
+    fun acceptConnectionRequest(connectUserRequest: ConnectUserRequest,context: Context) {
         viewModelScope.launch {
             acceptRequestResponse.value = ApiState.Loading
             try {
+                repository.refreshToken(context)
                 val response = repository.acceptRequest(connectUserRequest)
                 if (response.isSuccessful) {
                     acceptRequestResponse.value = ApiState.Success(response.body()!!)
@@ -72,10 +75,11 @@ class RequestViewModel @Inject constructor(private val repository: VChatReposito
         }
     }
 
-    fun rejectConnectionRequest(connectUserRequest: ConnectUserRequest) {
+    fun rejectConnectionRequest(connectUserRequest: ConnectUserRequest,context: Context) {
         viewModelScope.launch {
             rejectRequestResponse.value = ApiState.Loading
             try {
+                repository.refreshToken(context)
                 val response = repository.acceptRequest(connectUserRequest)
                 if (response.isSuccessful) {
                     rejectRequestResponse.value = ApiState.Success(response.body()!!)

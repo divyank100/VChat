@@ -14,4 +14,12 @@
     <color name="light_grey">#D9D9D9</color>
     <color name="off_white">#F5F5F5</color>
     <color name="chat_bg">#F7F7FC</color>
+
+
+    <color name="dark_blue">#3D7DFF</color> <!-- Lighter blue for contrast -->
+    <color name="dark_light_blue">#1E2A48</color> <!-- Darker shade for backgrounds -->
+    <color name="dark_light_grey">#3A3A3A</color> <!-- Dark grey for neutral elements -->
+    <color name="dark_off_white">#E0E0E0</color> <!-- Light grey for text contrast -->
+    <color name="dark_chat_bg">#121212</color> <!-- Dark background for chat -->
+
 </resources>

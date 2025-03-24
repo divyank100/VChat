@@ -1,5 +1,6 @@
 package com.example.vchat.screens.forgot_password
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vchat.models.forgot_password.ForgotPasswordRequest
@@ -16,10 +17,11 @@ class ForgotPasswordViewModel @Inject constructor(private val repository: VChatR
 
     val forgotPasswordResponse= MutableStateFlow<ApiState<Nothing>?>(null)
 
-    fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest){
+    fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest,context: Context){
         viewModelScope.launch {
             try {
                 forgotPasswordResponse.value=ApiState.Loading
+                repository.refreshToken(context)
                 val response=repository.forgotPassword(forgotPasswordRequest)
                 if (response.isSuccessful){
                     forgotPasswordResponse.value=ApiState.Success(response.body()!!)

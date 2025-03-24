@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,6 +18,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -34,13 +36,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -60,16 +63,21 @@ import com.example.vchat.util.Util
 import com.zegocloud.uikit.prebuilt.call.invite.widget.ZegoSendCallInvitationButton
 import com.zegocloud.uikit.service.defines.ZegoUIKitUser
 import dagger.hilt.android.EntryPointAccessors
-import im.zego.zegoexpress.internal.ZegoMediaDataJniApi.seekTo
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
 @Composable
-fun ChatScreen(navHostController: NavHostController, otherUserId: String?, userName: String?) {
+fun ChatScreen(
+    navHostController: NavHostController,
+    otherUserId: String?,
+    userName: String?,
+    userStatus: Boolean
+) {
     val viewModel: ChatViewModel = hiltViewModel()
     val messages by viewModel.messages.collectAsState()
+    val isOtherUserOnline by viewModel.isOtherUserOnline.collectAsState()
 
     val context = LocalContext.current
     val prefHelper = EntryPointAccessors.fromApplication(
@@ -83,6 +91,23 @@ fun ChatScreen(navHostController: NavHostController, otherUserId: String?, userN
         MediaPlayer.create(context, R.raw.message_notification)
     }
     var isFirstLoad by remember { mutableStateOf(true) }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+
+    val onlineStatus = if (isOtherUserOnline.userId == otherUserId) {
+        if (isOtherUserOnline.online_status) "online" else "offline"
+    } else {
+        if (userStatus) "online" else "offline"
+    }
+
+//    var onlineStatus =
+//        if (isOtherUserOnline.userId.isNotEmpty() && isOtherUserOnline.userId == otherUserId && isOtherUserOnline.online_status) {
+//            "online"
+//        } else if (userStatus) {
+//            "online"
+//        } else {
+//            "offline"
+//        }
 
 
     LaunchedEffect(key1 = Unit) {
@@ -98,19 +123,10 @@ fun ChatScreen(navHostController: NavHostController, otherUserId: String?, userN
             if (event == Lifecycle.Event.ON_RESUME) {
                 if (viewModel.roomId.isNotEmpty()) {
                     viewModel.fetchMessages()
-                } else {
-                    if (otherUserId != null) {
-                        viewModel.joinRoom(
-                            prefHelper.getString(AppConstants.userId) ?: "",
-                            otherUserId
-                        )
-                    }
                 }
             }
         }
-
         lifecycleOwner.lifecycle.addObserver(observer)
-
         onDispose {
             mediaPlayer.release()
             lifecycleOwner.lifecycle.removeObserver(observer)
@@ -118,26 +134,26 @@ fun ChatScreen(navHostController: NavHostController, otherUserId: String?, userN
     }
 
 
-
     LaunchedEffect(messages.size) {
         if (messages.isNotEmpty()) {
             scrollState.animateScrollToItem(messages.size - 1)
-            if (!isFirstLoad){
+            if (!isFirstLoad) {
                 mediaPlayer.apply {
                     seekTo(0)
                     start()
                 }
-            }
-            else{
+            } else {
                 isFirstLoad = false
             }
         }
     }
-
+    println("MESSAGES ----- $messages")
     val groupedMessages = messages.groupBy { message ->
         val date = parseMessageDate(message.timestamp)
         formatDateForGrouping(date)
     }
+
+    println("GROUPED MESSGES--- $groupedMessages")
 
 
 
@@ -146,14 +162,13 @@ fun ChatScreen(navHostController: NavHostController, otherUserId: String?, userN
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(color = colorResource(R.color.chat_bg))
-
+                .background(color = MaterialTheme.colorScheme.background)
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(60.dp)
-                    .background(color = Color.White)
+                    .background(color = MaterialTheme.colorScheme.surface)
                     .padding(horizontal = 15.dp, vertical = 5.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -172,16 +187,25 @@ fun ChatScreen(navHostController: NavHostController, otherUserId: String?, userN
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.ic_back),
-                            contentDescription = "back_icon"
+                            contentDescription = "back_icon",
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                     Text(
                         modifier = Modifier.padding(horizontal = 10.dp),
                         text = userName.toString(),
-                        color = Color.Black,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontFamily = FontFamily(Font(R.font.inter)),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        modifier = Modifier.padding(horizontal = 10.dp),
+                        text = onlineStatus,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontFamily = FontFamily(Font(R.font.inter)),
+                        fontStyle = FontStyle.Italic,
+                        fontSize = 14.sp,
                     )
                 }
 
@@ -189,10 +213,12 @@ fun ChatScreen(navHostController: NavHostController, otherUserId: String?, userN
                     CallButton(
                         isVideoCall = false
                     ) { button ->
-                        if (userName!!.isNotEmpty()) button.setInvitees(
+                        val username = userName?.replace(" ", "") ?: ""
+                        if (username.isNotEmpty()) button.setInvitees(
                             mutableListOf(
                                 ZegoUIKitUser(
-                                    userName.toString(), userName.toString()
+                                    username,
+                                    username
                                 )
                             )
                         )
@@ -201,24 +227,25 @@ fun ChatScreen(navHostController: NavHostController, otherUserId: String?, userN
                     CallButton(
                         isVideoCall = true
                     ) { button ->
-                        if (userName!!.isNotEmpty()) button.setInvitees(
+                        val username = userName?.replace(" ", "") ?: ""
+                        if (username.isNotEmpty()) button.setInvitees(
                             mutableListOf(
                                 ZegoUIKitUser(
-                                    userName.toString(), userName.toString()
+                                    username,
+                                    username
                                 )
                             )
                         )
                     }
                 }
-
             }
 
-
             LazyColumn(
-                modifier = Modifier.weight(1.0f),
+                modifier = Modifier
+                    .weight(1.0f)
+                    .imePadding(),
                 state = scrollState
             ) {
-
                 groupedMessages.forEach { (date, messagesForDate) ->
                     item {
                         DateHeader(date)
@@ -228,17 +255,13 @@ fun ChatScreen(navHostController: NavHostController, otherUserId: String?, userN
                         ChatBubble(message, prefHelper.getString(AppConstants.userId) ?: "")
                     }
                 }
-
-//                items(messages) { message ->
-//                    ChatBubble(message, prefHelper.getString(AppConstants.userId) ?: "")
-//                }
             }
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.CenterHorizontally)
-                    .background(Color.White)
+                    .background(MaterialTheme.colorScheme.surface)
                     .padding(horizontal = 10.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -251,21 +274,24 @@ fun ChatScreen(navHostController: NavHostController, otherUserId: String?, userN
                     placeholder = {
                         Text(
                             text = "Send a message...",
-                            fontFamily = FontFamily(Font(R.font.inter))
+                            fontFamily = FontFamily(Font(R.font.inter)),
+                            color = MaterialTheme.colorScheme.onTertiary.copy(alpha = 0.6f)
                         )
                     },
                     keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(
                         onDone = {
-//                        keyboardController?.hide()
+                            keyboardController?.hide()
                         }
                     ),
                     visualTransformation = VisualTransformation.None,
                     colors = TextFieldDefaults.colors(
-                        unfocusedContainerColor = colorResource(R.color.chat_bg),
-                        focusedContainerColor = colorResource(R.color.chat_bg),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.secondary,
+                        focusedContainerColor = MaterialTheme.colorScheme.secondary,
                         focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
+                        unfocusedIndicatorColor = Color.Transparent,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface
                     )
                 )
                 IconButton(
@@ -274,6 +300,7 @@ fun ChatScreen(navHostController: NavHostController, otherUserId: String?, userN
                             prefHelper.getString(AppConstants.userId) ?: "",
                             messageText
                         )
+                        keyboardController?.hide()
                         mediaPlayer.apply {
                             seekTo(0)
                             start()
@@ -285,29 +312,34 @@ fun ChatScreen(navHostController: NavHostController, otherUserId: String?, userN
                         modifier = Modifier.size(24.dp),
                         painter = painterResource(R.drawable.ic_send),
                         contentDescription = "Send Message",
-                        tint = colorResource(R.color.blue)
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
-
-
         }
     }
+
+
+
 }
 
 @Composable
 fun ChatBubble(message: Message, currentUserId: String) {
+    val colors = MaterialTheme.colorScheme
     val isCurrentUser = message.senderId == currentUserId
+
     val bubbleColor = if (isCurrentUser) {
-        Color.Blue
+        colors.primary
     } else {
-        Color.White
+        colors.secondary
     }
+
     val msgTextColor = if (isCurrentUser) {
-        Color.White
+        colors.onPrimary
     } else {
-        Color.Black
+        colors.onSecondary
     }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -330,7 +362,6 @@ fun ChatBubble(message: Message, currentUserId: String) {
                 .padding(horizontal = 10.dp, vertical = 3.dp),
         ) {
             Text(
-//                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
                 text = message.content,
                 color = msgTextColor,
                 fontSize = 16.sp,
@@ -344,13 +375,14 @@ fun ChatBubble(message: Message, currentUserId: String) {
                 fontSize = 12.sp,
                 fontFamily = FontFamily(Font(R.font.inter))
             )
-
         }
     }
 }
 
 @Composable
 fun DateHeader(date: String) {
+    val colors = MaterialTheme.colorScheme
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -359,7 +391,7 @@ fun DateHeader(date: String) {
     ) {
         Surface(
             shape = RoundedCornerShape(16.dp),
-            color = Color(0xFFE0E0E0),
+            color = colors.tertiary,
             modifier = Modifier.padding(horizontal = 16.dp)
         ) {
             Text(
@@ -368,7 +400,8 @@ fun DateHeader(date: String) {
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
-                fontFamily = FontFamily(Font(R.font.inter))
+                fontFamily = FontFamily(Font(R.font.inter)),
+                color = colors.onTertiary
             )
         }
     }
@@ -411,10 +444,12 @@ fun formatDateForGrouping(date: Date): String {
                 calendar.get(java.util.Calendar.DAY_OF_YEAR) == today.get(java.util.Calendar.DAY_OF_YEAR) -> {
             "Today"
         }
+
         calendar.get(java.util.Calendar.YEAR) == yesterday.get(java.util.Calendar.YEAR) &&
                 calendar.get(java.util.Calendar.DAY_OF_YEAR) == yesterday.get(java.util.Calendar.DAY_OF_YEAR) -> {
             "Yesterday"
         }
+
         else -> {
             SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).format(date)
         }

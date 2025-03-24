@@ -26,6 +26,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -51,6 +52,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.vchat.R
@@ -79,6 +81,7 @@ fun ForgotPasswordScreen(navHostController: NavHostController) {
         when (forgotPasswordState) {
             is ApiState.Success -> {
                 val response = (forgotPasswordState as ApiState.Success<Nothing>)
+                Toast.makeText(context,"Password has been Reset. Please login again",Toast.LENGTH_SHORT).show()
                 navHostController.popBackStack()
             }
 
@@ -112,7 +115,7 @@ fun ForgotPasswordScreen(navHostController: NavHostController) {
                         .fillMaxWidth()
                         .padding(10.dp, 30.dp, 10.dp, 0.dp),
                     text = "Reset your Password",
-                    color = colorResource(id = R.color.blue),
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 28.sp,
                     fontFamily = FontFamily(Font(R.font.inter)),
                     textAlign = TextAlign.Center,
@@ -124,7 +127,7 @@ fun ForgotPasswordScreen(navHostController: NavHostController) {
                     label = {
                         Text(
                             text = "E-Mail ",
-                            color = Color.LightGray,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             fontFamily = FontFamily(Font(R.font.inter)),
                         )
                     },
@@ -133,18 +136,13 @@ fun ForgotPasswordScreen(navHostController: NavHostController) {
                         .fillMaxWidth()
                         .padding(20.dp, 50.dp, 20.dp, 0.dp),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = colorResource(id = R.color.blue),
-                        focusedLabelColor = colorResource(
-                            id = R.color.blue
-                        ),
-                        containerColor = colorResource(
-                            id = R.color.light_blue
-                        )
+                        // Using theme colors
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        containerColor = MaterialTheme.colorScheme.secondary
                     ),
                     value = email,
-                    onValueChange = {
-                        email = it
-                    }
+                    onValueChange = { email = it }
                 )
 
                 OutlinedTextField(
@@ -152,9 +150,7 @@ fun ForgotPasswordScreen(navHostController: NavHostController) {
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         Icon(
-                            modifier = Modifier.clickable {
-                                passwordVisible = !passwordVisible
-                            },
+                            modifier = Modifier.clickable { passwordVisible = !passwordVisible },
                             painter = if (!passwordVisible) painterResource(id = R.drawable.ic_visibility) else painterResource(
                                 id = R.drawable.ic_visibility_off
                             ),
@@ -164,7 +160,7 @@ fun ForgotPasswordScreen(navHostController: NavHostController) {
                     label = {
                         Text(
                             text = "New Password ",
-                            color = Color.LightGray,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             fontFamily = FontFamily(Font(R.font.inter)),
                         )
                     },
@@ -173,18 +169,13 @@ fun ForgotPasswordScreen(navHostController: NavHostController) {
                         .fillMaxWidth()
                         .padding(20.dp, 10.dp, 20.dp, 0.dp),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = colorResource(id = R.color.blue),
-                        focusedLabelColor = colorResource(
-                            id = R.color.blue
-                        ),
-                        containerColor = colorResource(
-                            id = R.color.light_blue
-                        )
+                        // Using theme colors
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        containerColor = MaterialTheme.colorScheme.secondary
                     ),
                     value = password,
-                    onValueChange = {
-                        password = it
-                    }
+                    onValueChange = { password = it }
                 )
 
                 OutlinedTextField(
@@ -192,9 +183,7 @@ fun ForgotPasswordScreen(navHostController: NavHostController) {
                     visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         Icon(
-                            modifier = Modifier.clickable {
-                                confirmPasswordVisible = !confirmPasswordVisible
-                            },
+                            modifier = Modifier.clickable { confirmPasswordVisible = !confirmPasswordVisible },
                             painter = if (!confirmPasswordVisible) painterResource(id = R.drawable.ic_visibility) else painterResource(
                                 id = R.drawable.ic_visibility_off
                             ),
@@ -204,7 +193,7 @@ fun ForgotPasswordScreen(navHostController: NavHostController) {
                     label = {
                         Text(
                             text = "Confirm Password ",
-                            color = Color.LightGray,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             fontFamily = FontFamily(Font(R.font.inter)),
                         )
                     },
@@ -213,36 +202,28 @@ fun ForgotPasswordScreen(navHostController: NavHostController) {
                         .fillMaxWidth()
                         .padding(20.dp, 10.dp, 20.dp, 0.dp),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = colorResource(id = R.color.blue),
-                        focusedLabelColor = colorResource(
-                            id = R.color.blue
-                        ),
-                        containerColor = colorResource(
-                            id = R.color.light_blue
-                        )
+                        // Using theme colors
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        containerColor = MaterialTheme.colorScheme.secondary
                     ),
                     value = confirmPassword,
-                    onValueChange = {
-                        confirmPassword = it
-                    }
+                    onValueChange = { confirmPassword = it }
                 )
-
-
 
                 Button(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(20.dp, 45.dp, 20.dp, 2.dp),
                     shape = RoundedCornerShape(30.dp),
-                    colors = ButtonDefaults.buttonColors(colorResource(id = R.color.blue)),
+                    colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
                     onClick = {
                         if (validateDetails(context, email, password, confirmPassword)) {
                             val forgotPasswordRequest = ForgotPasswordRequest(email, password)
-                            viewmodel.forgotPassword(forgotPasswordRequest)
+                            viewmodel.forgotPassword(forgotPasswordRequest,context)
                         }
                     }
                 ) {
-
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
@@ -252,7 +233,7 @@ fun ForgotPasswordScreen(navHostController: NavHostController) {
                             modifier = Modifier.padding(0.dp, 7.dp),
                             fontFamily = FontFamily(Font(R.font.inter)),
                             text = "Forgot Password",
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = 16.sp,
                             textAlign = TextAlign.Center,
                         )
@@ -263,28 +244,28 @@ fun ForgotPasswordScreen(navHostController: NavHostController) {
                             painter = painterResource(id = R.drawable.ic_check),
                             contentDescription = "arrow_img"
                         )
-
                     }
-
                 }
 
                 if (forgotPasswordState is ApiState.Loading) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.White.copy(alpha = 0.6f))
-                            .wrapContentSize(Alignment.Center),
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f))
+                            .clickable(enabled = false) {}
+                            .then(Modifier.zIndex(10f)),
+                        contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(
-                            color = colorResource(id = R.color.blue),
+                            color = MaterialTheme.colorScheme.primary,
                             strokeWidth = 4.dp
                         )
                     }
                 }
             }
         }
-
     }
+
 
 }
 

@@ -1,10 +1,10 @@
 package com.example.vchat.screens.requests
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -25,6 +24,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
@@ -46,24 +46,19 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.example.vchat.R
 import com.example.vchat.di.PrefHelperEntryPoint
 import com.example.vchat.models.connectUser.ConnectUserRequest
-import com.example.vchat.models.get_connections.UserConnectionResponse
-import com.example.vchat.models.login.User
 import com.example.vchat.models.requests.GetAllRequestResponse
 import com.example.vchat.models.requests.RequestUser
 import com.example.vchat.models.requests.RespondRequestResponse
 import com.example.vchat.models.useridRequest.UserIdRequest
-import com.example.vchat.nav_graph.VChatNavigationItem
-import com.example.vchat.screens.connect_people.ConnectPeopleViewModel
 import com.example.vchat.util.ApiState
 import com.example.vchat.util.AppConstants
 import com.example.vchat.util.PrefHelper
@@ -94,7 +89,7 @@ fun RequestScreen(navHostController: NavHostController) {
         viewModel.getRequests(
             userIdRequest = UserIdRequest(
                 prefHelper.getString(AppConstants.userId) ?: ""
-            )
+            ), context
         )
     }
 
@@ -126,7 +121,7 @@ fun RequestScreen(navHostController: NavHostController) {
                 viewModel.getRequests(
                     userIdRequest = UserIdRequest(
                         prefHelper.getString(AppConstants.userId) ?: ""
-                    )
+                    ), context
                 )
             }
 
@@ -149,7 +144,7 @@ fun RequestScreen(navHostController: NavHostController) {
                 viewModel.getRequests(
                     userIdRequest = UserIdRequest(
                         prefHelper.getString(AppConstants.userId) ?: ""
-                    )
+                    ), context
                 )
             }
 
@@ -172,12 +167,13 @@ fun RequestScreen(navHostController: NavHostController) {
     }
 
     Scaffold { innerPadding ->
+        val colorScheme = MaterialTheme.colorScheme
 
         Column(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .background(color = Color.White),
+                .background(colorScheme.surface),
         ) {
             SearchBar(
                 modifier = Modifier
@@ -186,9 +182,8 @@ fun RequestScreen(navHostController: NavHostController) {
                     .padding(16.dp, 10.dp, 16.dp, 16.dp),
                 shape = RoundedCornerShape(5.dp),
                 query = searchQuery,
-//                shadowElevation = 2.dp,
                 colors = SearchBarDefaults.colors(
-                    containerColor = colorResource(R.color.off_white)
+                    containerColor = colorScheme.surface
                 ),
                 onQueryChange = {
                     searchQuery = it
@@ -197,7 +192,7 @@ fun RequestScreen(navHostController: NavHostController) {
                     Text(
                         text = "Search by name",
                         fontFamily = FontFamily(Font(R.font.inter)),
-                        color = Color.LightGray
+                        color = colorScheme.onSurface.copy(alpha = 0.6f)
                     )
                 },
                 onSearch = {
@@ -220,7 +215,6 @@ fun RequestScreen(navHostController: NavHostController) {
                             .clip(CircleShape),
                     )
                 }
-
             ) {
                 if (searchQuery.isEmpty()) {
                     Text(
@@ -229,21 +223,24 @@ fun RequestScreen(navHostController: NavHostController) {
                             .align(Alignment.CenterHorizontally),
                         text = "No users found",
                         fontFamily = FontFamily(Font(R.font.inter)),
-                        color = Color.Black
+                        color = colorScheme.onBackground
                     )
                 } else {
-                    Requests(searchResults, navHostController, viewModel, prefHelper)
+                    Requests(searchResults, navHostController, viewModel, prefHelper, context)
                 }
             }
+
             if (acceptRequestState is ApiState.Loading || rejectRequestState is ApiState.Loading) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.White)
-                        .wrapContentSize(Alignment.Center)
+                        .background(colorScheme.background.copy(alpha = 0.7f))
+                        .clickable(enabled = false) {}
+                        .then(Modifier.zIndex(10f)),
+                    contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(
-                        color = colorResource(id = R.color.blue),
+                        color = colorScheme.primary,
                         strokeWidth = 4.dp
                     )
                 }
@@ -254,14 +251,14 @@ fun RequestScreen(navHostController: NavHostController) {
                 text = "Requests",
                 fontFamily = FontFamily(Font(R.font.inter)),
                 fontSize = 22.sp,
-                color = colorResource(R.color.blue),
+                color = colorScheme.primary,
                 fontWeight = FontWeight.SemiBold,
             )
 
-            Requests(searchResults, navHostController, viewModel, prefHelper)
+            Requests(searchResults, navHostController, viewModel, prefHelper, context)
         }
-
     }
+
 }
 
 @Composable
@@ -269,14 +266,15 @@ private fun Requests(
     users: List<RequestUser>,
     navHostController: NavHostController,
     viewModel: RequestViewModel,
-    prefHelper: PrefHelper
+    prefHelper: PrefHelper,
+    context: Context,
 ) {
 
     LazyColumn(
         modifier = Modifier.padding(0.dp, 15.dp, 0.dp, 5.dp)
     ) {
         items(users) { user ->
-            UserCard(user, viewModel, prefHelper)
+            UserCard(user, viewModel, prefHelper, context)
         }
     }
 }
@@ -285,14 +283,15 @@ private fun Requests(
 fun UserCard(
     user: RequestUser,
     viewModel: RequestViewModel,
-    prefHelper: PrefHelper
+    prefHelper: PrefHelper,
+    context: Context
 ) {
-
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .wrapContentHeight()
             .fillMaxWidth()
-            .background(Color.White)
+            .background(colors.surface)
     ) {
         Row(
             modifier = Modifier
@@ -302,7 +301,7 @@ fun UserCard(
         ) {
             Image(
                 painter = rememberAsyncImagePainter(
-                    model = user.userProfile, // Pass the URL here
+                    model = user.userProfile,
                     placeholder = painterResource(R.drawable.img_profile),
                     error = painterResource(R.drawable.img_profile)
                 ),
@@ -327,7 +326,7 @@ fun UserCard(
                         .fillMaxHeight(0.4f),
                     text = user.userName,
                     fontFamily = FontFamily(Font(R.font.inter)),
-                    color = Color.Black,
+                    color = colors.onSurface,
                     fontSize = 16.sp
                 )
                 Text(
@@ -341,43 +340,97 @@ fun UserCard(
                 )
             }
 
-            Row {
-                Image(
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                Button(
+                    modifier = Modifier.padding(10.dp, 0.dp, 0.dp, 0.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    onClick = {
+                        viewModel.acceptConnectionRequest(
+                            ConnectUserRequest(
+                                prefHelper.getString(AppConstants.userId) ?: "",
+                                user.id
+                            ), context
+                        )
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colors.primary,
+                        disabledContainerColor = colors.secondary,
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(
+                        defaultElevation = 5.dp,
+                        pressedElevation = 5.dp,
+                    ),
+                ) {
+                    Text(
+                        text = "Accept",
+                        fontFamily = FontFamily(Font(R.font.inter)),
+                        color = colors.onPrimary
+
+                    )
+                }
+
+                Text(
                     modifier = Modifier
                         .padding(10.dp, 0.dp, 0.dp, 0.dp)
-                        .size(40.dp)
-                        .clip(CircleShape)
                         .clickable {
                             viewModel.rejectConnectionRequest(
                                 ConnectUserRequest(
                                     prefHelper.getString(AppConstants.userId) ?: "",
                                     user.id
-                                )
+                                ), context
                             )
                         },
-                    painter = painterResource(R.drawable.ic_circle_cancel),
-                    contentDescription = "check_img"
+                    text = "Ignore",
+                    fontFamily = FontFamily(Font(R.font.inter)),
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp,
+                    color = colors.onSurface
+
                 )
-                Image(
-                    modifier = Modifier
-                        .padding(10.dp, 0.dp, 0.dp, 0.dp)
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .clickable {
-                            viewModel.acceptConnectionRequest(
-                                ConnectUserRequest(
-                                    prefHelper.getString(AppConstants.userId) ?: "",
-                                    user.id
-                                )
-                            )
-                        },
-                    painter = painterResource(R.drawable.ic_circle_check),
-                    contentDescription = "check_img"
-                )
+
+
+//                Image(
+//                    modifier = Modifier
+//                        .padding(10.dp, 0.dp, 0.dp, 0.dp)
+//                        .size(40.dp)
+//                        .clip(CircleShape)
+//                        .clickable {
+//                            viewModel.rejectConnectionRequest(
+//                                ConnectUserRequest(
+//                                    prefHelper.getString(AppConstants.userId) ?: "",
+//                                    user.id
+//                                ),context
+//                            )
+//                        },
+//                    painter = painterResource(R.drawable.ic_circle_cancel),
+//                    contentDescription = "check_img"
+//                )
+
+
+//                Image(
+//                    modifier = Modifier
+//                        .padding(10.dp, 0.dp, 0.dp, 0.dp)
+//                        .size(40.dp)
+//                        .clip(CircleShape)
+//                        .clickable {
+//                            viewModel.acceptConnectionRequest(
+//                                ConnectUserRequest(
+//                                    prefHelper.getString(AppConstants.userId) ?: "",
+//                                    user.id
+//                                ),context
+//                            )
+//                        },
+//                    painter = painterResource(R.drawable.ic_circle_check),
+//                    contentDescription = "check_img"
+//                )
             }
         }
         HorizontalDivider(
-            modifier = Modifier.padding(10.dp)
+            modifier = Modifier.padding(start = 80.dp, top = 5.dp, bottom = 5.dp),
+            color = colors.tertiary.copy(alpha = 0.5f)
         )
     }
 

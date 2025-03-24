@@ -43,4 +43,8 @@ class SignupViewModel @Inject constructor(private val repository: VChatRepositor
             }
         }
     }
+
+    fun clearSignupState() {
+        signUpUserResponse.value = null
+    }
 }

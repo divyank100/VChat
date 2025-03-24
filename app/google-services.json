@@ -12,7 +12,28 @@
           "package_name": "com.example.vchat"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1036730575692-29876dqh4s97dv9c42nkcbg2vl4eoipn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.vchat",
+            "certificate_hash": "82e7f1b6bd716674fef1892bb31d25cdd46a2f00"
+          }
+        },
+        {
+          "client_id": "1036730575692-m44t2jgs3q8gvi7s8djlnhtdqpc7t0d6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.vchat",
+            "certificate_hash": "fc84d9143f518f150765d35253704465d6b1e763"
+          }
+        },
+        {
+          "client_id": "1036730575692-lquf0dr2jr26ql489raa8m8etko3spmk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCJF3wuzb-U0Ej2fb9jpiYbhFsp5Gg1GB0"
@@ -20,7 +41,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1036730575692-lquf0dr2jr26ql489raa8m8etko3spmk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

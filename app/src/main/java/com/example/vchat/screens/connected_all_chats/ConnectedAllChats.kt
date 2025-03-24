@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -23,6 +22,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
@@ -37,15 +38,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.vchat.MainActivity
@@ -55,9 +56,9 @@ import com.example.vchat.models.get_connections.UserConnectionResponse
 import com.example.vchat.models.login.User
 import com.example.vchat.models.useridRequest.UserIdRequest
 import com.example.vchat.nav_graph.VChatNavigationItem
-import com.example.vchat.service.ZegoCloudService
 import com.example.vchat.util.ApiState
 import com.example.vchat.util.AppConstants
+import com.example.vchat.util.DataCache
 import com.example.vchat.util.SocketHandler
 import com.google.gson.Gson
 import dagger.hilt.android.EntryPointAccessors
@@ -84,14 +85,19 @@ fun AllChats(navHostController: NavHostController) {
     val json: String? = prefHelper.getString(AppConstants.userData)
     val user: User? = gson.fromJson(json, User::class.java)
 
+
     LaunchedEffect(Unit) {
+        DataCache.userId=user?.id ?: ""
         SocketHandler.setSocket()
         SocketHandler.establishConnection()
-        context.initZegoInviteService(AppConstants.APP_ID, AppConstants.APP_SIGN, user?.userName!!, user.userName)
+        viewModel.initializeSocket()
+        viewModel.userConnected(user?.id ?: "")
+        val username = user?.userName?.replace(" ", "") ?: ""
+        context.initZegoInviteService(AppConstants.APP_ID, AppConstants.APP_SIGN, username, username)
         viewModel.getConnections(
             userIdRequest = UserIdRequest(
-                user.id
-            )
+                user?.id!!
+            ),context
         )
     }
 
@@ -120,13 +126,13 @@ fun AllChats(navHostController: NavHostController) {
         }
     }
 
+
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .background(color = Color.White),
-//            horizontalAlignment = Alignment.CenterHorizontally
+                .background(color = MaterialTheme.colorScheme.background),
         ) {
             Row(
                 modifier = Modifier
@@ -138,7 +144,7 @@ fun AllChats(navHostController: NavHostController) {
                     "Connect People",
                     fontFamily = FontFamily(Font(R.font.inter)),
                     fontSize = 18.sp,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.SemiBold
                 )
                 Image(
@@ -146,7 +152,8 @@ fun AllChats(navHostController: NavHostController) {
                         navHostController.navigate(VChatNavigationItem.ConnectPeople.route)
                     },
                     painter = painterResource(R.drawable.ic_plus),
-                    contentDescription = "connect_people_icon"
+                    contentDescription = "connect_people_icon",
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
                 )
             }
             SearchBar(
@@ -156,9 +163,8 @@ fun AllChats(navHostController: NavHostController) {
                     .padding(16.dp, 0.dp, 16.dp, 16.dp),
                 shape = RoundedCornerShape(5.dp),
                 query = searchQuery,
-//                shadowElevation = 2.dp,
                 colors = SearchBarDefaults.colors(
-                    containerColor = colorResource(R.color.off_white)
+                    containerColor = colorScheme.surface
                 ),
                 onQueryChange = {
                     searchQuery = it
@@ -167,7 +173,7 @@ fun AllChats(navHostController: NavHostController) {
                     Text(
                         text = "Search by name",
                         fontFamily = FontFamily(Font(R.font.inter)),
-                        color = Color.LightGray
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
                     )
                 },
                 onSearch = {
@@ -192,10 +198,12 @@ fun AllChats(navHostController: NavHostController) {
                             .clip(CircleShape),
                     )
                 }
-
             ) {
                 if (searchQuery.isEmpty()) {
-                    Text("No users found")
+                    Text(
+                        "No users found",
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
                 } else {
                     ConnectedUsers(searchResults, navHostController)
                 }
@@ -204,11 +212,13 @@ fun AllChats(navHostController: NavHostController) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.White)
-                        .wrapContentSize(Alignment.Center)
+                        .background(MaterialTheme.colorScheme.background.copy(alpha = 0.7f))
+                        .clickable(enabled = false) {}
+                        .then(Modifier.zIndex(10f)),
+                    contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(
-                        color = colorResource(id = R.color.blue),
+                        color = MaterialTheme.colorScheme.primary,
                         strokeWidth = 4.dp
                     )
                 }
@@ -218,13 +228,13 @@ fun AllChats(navHostController: NavHostController) {
                 text = "Chats",
                 fontFamily = FontFamily(Font(R.font.inter)),
                 fontSize = 22.sp,
-                color = colorResource(R.color.blue),
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.SemiBold,
             )
             ConnectedUsers(searchResults, navHostController)
-
         }
     }
+
 }
 
 @Composable
@@ -240,16 +250,17 @@ private fun ConnectedUsers(users: List<User>, navHostController: NavHostControll
 
 @Composable
 fun UserCard(user: User, navHostController: NavHostController) {
+    val colors = MaterialTheme.colorScheme
+
     Column(
         modifier = Modifier
             .wrapContentHeight()
             .fillMaxWidth()
-            .background(Color.White)
+            .background(colors.surface)
             .clickable {
-                navHostController.navigate(VChatNavigationItem.ChatScreen.route + "/${user.id}" + "/${user.userName}")
+                navHostController.navigate(VChatNavigationItem.ChatScreen.route + "/${user.id}" + "/${user.userName}" + "/${user.userStatus}")
             },
     ) {
-
         Row(
             modifier = Modifier
                 .height(80.dp)
@@ -276,23 +287,22 @@ fun UserCard(user: User, navHostController: NavHostController) {
                         .fillMaxHeight(0.4f),
                     text = user.userName,
                     fontFamily = FontFamily(Font(R.font.inter)),
-                    color = Color.Black,
+                    color = colors.onSurface,
                     fontSize = 16.sp
                 )
                 Text(
                     text = if (user.userStatus) "Online" else "Offline",
                     fontFamily = FontFamily(Font(R.font.inter)),
-                    color = Color.LightGray,
+                    color = colors.tertiary,
                     fontSize = 14.sp
                 )
             }
         }
         HorizontalDivider(
-            modifier = Modifier.padding(10.dp)
+            modifier = Modifier.padding(start = 80.dp),
+            color = colors.tertiary.copy(alpha = 0.5f)
         )
     }
-
-
 }
 
 //@Composable

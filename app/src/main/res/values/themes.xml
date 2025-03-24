@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <style name="Theme.VChat" parent="Theme.MaterialComponents.Light.DarkActionBar">
+        <item name="colorPrimary">@color/blue</item>
+        <item name="colorPrimaryVariant">@color/blue</item>
+        <item name="colorOnPrimary">@color/white</item>
 
-<!--    <style name="Theme.VChat" parent="android:Theme.Material.Light.NoActionBar" />-->
-    <style name="Theme.VChat" parent="Theme.MaterialComponents.Light.DarkActionBar" />
+        <!-- Fix Action Bar Background to White -->
+        <item name="android:colorBackground">@color/chat_bg</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@color/black</item>
+    </style>
+
+<!--        <style name="Theme.VChat" parent="Theme.Material3.DayNight">-->
+<!--            <item name="colorPrimary">@color/blue</item>-->
+<!--            <item name="colorSurface">@color/white</item>-->
+<!--            <item name="android:colorBackground">@color/chat_bg</item>-->
+<!--        </style>-->
 </resources>
