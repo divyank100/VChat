@@ -19,14 +19,14 @@ if (secretsFile.exists()) {
 }
 
 android {
-    namespace = "com.example.vchat"
+    namespace = "com.demo.vchat"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.vchat"
+        applicationId = "com.demo.vchat"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
+        versionCode = 3
         versionName = "1.0"
 
         buildConfigField("long", "APP_ID", "${secretsProperties.getProperty("APP_ID", "0")}L")

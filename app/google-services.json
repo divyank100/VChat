@@ -7,6 +7,43 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:1036730575692:android:22ea774c67c2c3818d7de9",
+        "android_client_info": {
+          "package_name": "com.demo.vchat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1036730575692-995fkrgr5jf17ae7shopq43ugvm2ntur.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.demo.vchat",
+            "certificate_hash": "82e7f1b6bd716674fef1892bb31d25cdd46a2f00"
+          }
+        },
+        {
+          "client_id": "1036730575692-lquf0dr2jr26ql489raa8m8etko3spmk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCJF3wuzb-U0Ej2fb9jpiYbhFsp5Gg1GB0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1036730575692-lquf0dr2jr26ql489raa8m8etko3spmk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:1036730575692:android:869ebd281cb946b98d7de9",
         "android_client_info": {
           "package_name": "com.example.vchat"
